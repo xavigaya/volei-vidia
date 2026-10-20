@@ -122,7 +122,7 @@ git clone https://github.com/xavigaya/volei-vidia.git
 cd volei-vidia
 cp .env.example .env      # a Windows (PowerShell): Copy-Item .env.example .env
                           # i omple-hi l'URL i la clau de Supabase
-npm install
+npm ci
 npm run dev
 ```
 
@@ -132,7 +132,7 @@ Obre http://localhost:5173, crea un compte, confirma el correu i crea el teu clu
 
 ```bash
 git pull
-npm install
+npm ci
 ```
 
 Si la versió nova porta un fitxer nou a `supabase/migrations/`, executa'l a l'SQL Editor de Supabase.
@@ -162,6 +162,14 @@ Per publicar una versió nova: canvia `"version"` a `package.json` (p. ex. `0.8.
 ### 6. YouTube
 
 A **Configuració** del club hi ha els passos per crear l'ID de client OAuth de Google i indicar la llista de reproducció. Mentre el projecte de Google no estigui verificat, YouTube deixa els vídeos pujats en privat; la visibilitat es pot canviar després a YouTube Studio.
+
+### 7. Seguretat
+
+- **Confirmació del correu**: a **Authentication → Sign In / Providers → Email**, *Confirm email* ha d'estar activat. Les invitacions només s'accepten amb el correu confirmat.
+- **Registre només per a convidats** (recomanat): a **Authentication → Hooks**, afegeix el hook *Before User Created* de tipus *Postgres* amb la funció `public.hook_only_invited_signup`. Així només es poden crear comptes amb un correu que tingui una invitació pendent d'algun club. Per donar d'alta algú, convida'l primer des de **Membres**.
+- **Verificació en dos passos** als comptes de GitHub, Supabase i Google de les persones que administren el projecte.
+- Mai no posis la clau `service_role` (*secret*) de Supabase a l'aplicació, al `.env` ni a GitHub: la clau *publishable* és l'única que ha de sortir del tauler.
+- En tancar la sessió s'esborren les dades desades al dispositiu (còpies sense connexió i canvis pendents). Si hi ha canvis sense enviar, l'aplicació ho avisa abans.
 
 ## Protecció de dades
 

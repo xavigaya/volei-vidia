@@ -21,7 +21,7 @@ export function AppShell() {
   const { t } = useTranslation();
   const club = useCurrentClub();
   const { role, memberships, selectClub, isSuperadmin, virtual } = useClub();
-  const { user, signOut } = useAuth();
+  const { user, signOut, pendingBeforeSignOut } = useAuth();
   const logo = publicLogoUrl(club.logo_path);
 
   return (
@@ -68,7 +68,15 @@ export function AppShell() {
           <div className="user-line" title={user?.email ?? ''}>
             {user?.email}
           </div>
-          <button className="btn-link light" onClick={() => void signOut()}>
+          <button
+            className="btn-link light"
+            onClick={async () => {
+              // Les dades del dispositiu s'esborren: avisa si hi ha canvis sense enviar
+              const pending = await pendingBeforeSignOut();
+              if (pending > 0 && !window.confirm(t('auth.signOutPending', { count: pending }))) return;
+              await signOut();
+            }}
+          >
             {t('auth.signOut')}
           </button>
         </div>
