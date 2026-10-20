@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
+import { pickConvocable } from '../lib/numbers';
 import { cached } from '../offline/store';
 import { useAuth } from '../auth/AuthProvider';
 import { useClub, useCurrentClub } from '../club/ClubProvider';
@@ -194,7 +195,11 @@ function CreateMatchForm({ onCancel }: { onCancel: () => void }) {
       .select('*, players(*)')
       .in('team_id', [homeId, awayId])
       .eq('active', true);
-    const rows = ((roster ?? []) as TeamPlayer[]).map((tp) => ({
+    // Si a la plantilla hi ha dorsals repetits, només se'n convoca un (la resta,
+    // des de la pestanya de convocatòria després de canviar-ne el dorsal)
+    const all = (roster ?? []) as TeamPlayer[];
+    const chosen = [homeId, awayId].flatMap((id) => pickConvocable(all.filter((tp) => tp.team_id === id)).ok);
+    const rows = chosen.map((tp) => ({
       match_id: matchId,
       club_id: club.id,
       side: tp.team_id === homeId ? 'H' : 'A',

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { playerDisplayName, type MatchPlayer, type SideCode, type TeamPlayer } from '../lib/types';
 import { ErrorBox } from '../components/ui';
 import type { UseMatch } from './useMatch';
+import { duplicatedNumbers, pickConvocable } from '../lib/numbers';
 
 // Convocatòria: quins jugadors de cada plantilla participen en el partit,
 // amb quin dorsal i qui fa de líbero.
@@ -12,6 +13,7 @@ export function RosterEditor({ m }: { m: UseMatch }) {
   const match = m.match!;
   const [rosters, setRosters] = useState<Record<SideCode, TeamPlayer[]>>({ H: [], A: [] });
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const started = m.events.length > 0;
   const editable = m.canCode;
 
@@ -30,8 +32,21 @@ export function RosterEditor({ m }: { m: UseMatch }) {
       });
   }, [match.home_team_id, match.away_team_id]);
 
+  // Jugador convocat d'aquest equip que ja porta aquest dorsal
+  function holderOf(side: SideCode, n: number, except?: string) {
+    return m.players.find((p) => p.side === side && p.shirt_number === n && p.player_id !== except);
+  }
+
   async function toggle(side: SideCode, tp: TeamPlayer, mp: MatchPlayer | undefined) {
     setError(null);
+    setWarning(null);
+    if (!mp) {
+      const holder = holderOf(side, tp.shirt_number, tp.player_id);
+      if (holder) {
+        setError(t('matches.numberInUse', { n: tp.shirt_number, name: playerDisplayName(holder.players) }));
+        return;
+      }
+    }
     if (mp) {
       const { error } = await supabase.from('match_players').delete().eq('match_id', match.id).eq('player_id', tp.player_id);
       if (error) setError(error.message);
@@ -54,9 +69,19 @@ export function RosterEditor({ m }: { m: UseMatch }) {
   // Convoca (o desconvoca) tota la plantilla activa d'un equip
   async function setAll(side: SideCode, on: boolean) {
     setError(null);
+    setWarning(null);
     const inMatch = m.players.filter((p) => p.side === side);
     if (on) {
-      const missing = rosters[side].filter((tp) => tp.active && !inMatch.some((p) => p.player_id === tp.player_id));
+      const candidates = rosters[side].filter((tp) => tp.active && !inMatch.some((p) => p.player_id === tp.player_id));
+      // No es convoquen dos jugadors amb el mateix dorsal
+      const { ok: missing, skipped } = pickConvocable(candidates, inMatch.map((p) => p.shirt_number));
+      if (skipped.length) {
+        setWarning(
+          t('matches.numbersSkipped', {
+            list: skipped.map((tp) => `#${tp.shirt_number} ${playerDisplayName(tp.players)}`).join(', '),
+          }),
+        );
+      }
       if (missing.length) {
         const { error } = await supabase.from('match_players').insert(
           missing.map((tp) => ({
@@ -85,6 +110,14 @@ export function RosterEditor({ m }: { m: UseMatch }) {
 
   async function update(mp: MatchPlayer, patch: Partial<Pick<MatchPlayer, 'shirt_number' | 'is_libero'>>) {
     setError(null);
+    if (patch.shirt_number != null) {
+      const holder = holderOf(mp.side, patch.shirt_number, mp.player_id);
+      if (holder) {
+        setError(t('matches.numberInUse', { n: patch.shirt_number, name: playerDisplayName(holder.players) }));
+        await m.reloadPlayers();
+        return;
+      }
+    }
     const { error } = await supabase.from('match_players').update(patch).eq('match_id', match.id).eq('player_id', mp.player_id);
     if (error) setError(error.code === '23505' ? t('players.numberTaken') : error.message);
     await m.reloadPlayers();
@@ -94,6 +127,7 @@ export function RosterEditor({ m }: { m: UseMatch }) {
     const team = side === 'H' ? match.home : match.away;
     const inMatch = m.players.filter((p) => p.side === side);
     const liberos = inMatch.filter((p) => p.is_libero).length;
+    const dups = duplicatedNumbers(rosters[side]);
     return (
       <section className="card stack">
         <div className="row between">
@@ -162,6 +196,11 @@ export function RosterEditor({ m }: { m: UseMatch }) {
                     <td>
                       {playerDisplayName(tp.players)}
                       {tp.is_captain && <span className="badge">C</span>}
+                      {!mp && tp.active && dups.has(tp.shirt_number) && (
+                        <span className="badge badge-warn" title={t('matches.dupNumberHelp')}>
+                          {t('matches.dupNumber')}
+                        </span>
+                      )}
                     </td>
                     <td className="center">
                       <input
@@ -186,6 +225,7 @@ export function RosterEditor({ m }: { m: UseMatch }) {
     <div className="stack">
       {started && <p className="notice small">{t('matches.rosterLocked')}</p>}
       {error && <ErrorBox message={error} />}
+      {warning && <div className="notice small">{warning}</div>}
       <div className="grid-2 roster-columns">
         {column('H')}
         {column('A')}

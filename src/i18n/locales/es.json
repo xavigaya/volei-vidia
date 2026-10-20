@@ -157,7 +157,8 @@
     "existingNoTeam": "Jugador sin equipo",
     "allTeams": "Todos los equipos",
     "noTeam": "Sin equipo",
-    "inMatches": "No se puede eliminar este jugador porque ha jugado partidos y sus estadísticas dependen de él. Si ya no está en el equipo, quítalo de la plantilla o desmárcalo como activo en la ficha del equipo."
+    "inMatches": "No se puede eliminar este jugador porque ha jugado partidos y sus estadísticas dependen de él. Si ya no está en el equipo, quítalo de la plantilla o desmárcalo como activo en la ficha del equipo.",
+    "numberDupConfirm": "Otro jugador del equipo ya tiene el dorsal {{n}}. Se puede repetir, pero no podrán convocarse ambos en el mismo partido. ¿Quieres continuar?"
   },
   "positions": {
     "S": "Colocador/a",
@@ -205,7 +206,11 @@
     "needRoster": "Antes de empezar, revisa la convocatoria de los dos equipos.",
     "selectAll": "Convocar toda la plantilla",
     "selectNone": "Quitarlos todos",
-    "tabStats": "Estadísticas"
+    "tabStats": "Estadísticas",
+    "numberInUse": "El dorsal {{n}} ya lo lleva {{name}} en este partido. Cambia el dorsal de uno de los dos (aquí o en la plantilla) para poder convocarlo.",
+    "numbersSkipped": "No se han convocado estos jugadores porque su dorsal ya lo lleva otro convocado: {{list}}. Cambia su dorsal para poder convocarlos.",
+    "dupNumber": "dorsal repetido",
+    "dupNumberHelp": "Otro jugador de la plantilla tiene el mismo dorsal: no se pueden convocar ambos en el mismo partido."
   },
   "live": {
     "serving": "Saca",

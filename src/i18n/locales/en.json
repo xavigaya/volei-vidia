@@ -157,7 +157,8 @@
     "existingNoTeam": "Player without team",
     "allTeams": "All teams",
     "noTeam": "No team",
-    "inMatches": "This player cannot be deleted because they have played matches and their statistics depend on them. If they have left the team, remove them from the roster or untick “Active” on the team page."
+    "inMatches": "This player cannot be deleted because they have played matches and their statistics depend on them. If they have left the team, remove them from the roster or untick “Active” on the team page.",
+    "numberDupConfirm": "Another team player already has number {{n}}. It is allowed, but both cannot be selected for the same match. Continue?"
   },
   "positions": {
     "S": "Setter",
@@ -205,7 +206,11 @@
     "needRoster": "Before starting, check both teams’ match rosters.",
     "selectAll": "Select whole roster",
     "selectNone": "Remove all",
-    "tabStats": "Statistics"
+    "tabStats": "Statistics",
+    "numberInUse": "Shirt number {{n}} is already worn by {{name}} in this match. Change one of the two numbers (here or in the roster) to add this player.",
+    "numbersSkipped": "These players were not added because another selected player already has their number: {{list}}. Change their number to add them.",
+    "dupNumber": "duplicate number",
+    "dupNumberHelp": "Another roster player has the same number: both cannot play in the same match."
   },
   "live": {
     "serving": "Serving",

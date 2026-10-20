@@ -235,9 +235,9 @@ function NewPlayerForm({
       .eq('team_id', teamId)
       .eq('shirt_number', number)
       .eq('active', true);
-    if ((dup.data ?? []).length > 0) {
+    // Es permet repetir dorsal dins l'equip, però s'avisa
+    if ((dup.data ?? []).length > 0 && !window.confirm(t('players.numberDupConfirm', { n: number }))) {
       setBusy(false);
-      setError(t('players.numberTaken'));
       return;
     }
     const { data, error } = await supabase

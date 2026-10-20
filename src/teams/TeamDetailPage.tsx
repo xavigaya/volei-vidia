@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { duplicatedNumbers } from '../lib/numbers';
 import { supabase } from '../lib/supabase';
 import { useClub, useCurrentClub } from '../club/ClubProvider';
 import {
@@ -68,6 +69,8 @@ export function TeamDetailPage() {
     [roster],
   );
 
+  const dupNumbers = useMemo(() => duplicatedNumbers(roster), [roster]);
+
   async function updateRow(tp: TeamPlayer, patch: Partial<Pick<TeamPlayer, 'shirt_number' | 'position' | 'is_captain' | 'active'>>) {
     setError(null);
     // Només un capità per equip
@@ -79,7 +82,7 @@ export function TeamDetailPage() {
       .update(patch)
       .eq('team_id', tp.team_id)
       .eq('player_id', tp.player_id);
-    if (error) setError(error.code === '23505' ? t('players.numberTaken') : error.message);
+    if (error) setError(error.message);
     await load();
   }
 
@@ -237,6 +240,12 @@ export function TeamDetailPage() {
                   </td>
                   <td>
                     <strong>{playerDisplayName(tp.players)}</strong>
+                    {tp.active && dupNumbers.has(tp.shirt_number) && (
+                      <span className="badge badge-warn" title={t('matches.dupNumberHelp')}>
+                        {' '}
+                        {t('matches.dupNumber')}
+                      </span>
+                    )}
                     {tp.players.is_minor && !tp.players.image_consent && (
                       <span className="warn small" title={t('players.imageConsentHelp')}>
                         {' '}
@@ -385,10 +394,8 @@ function AddToRoster({
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    if (used.has(number)) {
-      setError(t('players.numberTaken'));
-      return;
-    }
+    // Es permet repetir dorsal dins l'equip, però s'avisa
+    if (used.has(number) && !window.confirm(t('players.numberDupConfirm', { n: number }))) return;
     setBusy(true);
     let pid = playerId;
     if (mode === 'new') {

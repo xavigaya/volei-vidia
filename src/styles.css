@@ -719,3 +719,4 @@ input.search { max-width: 260px; }
 .radar-label { font-size: 11px; fill: var(--muted); }
 .radar-table th, .radar-table td { padding: 5px 6px; }
 .summaries .radar { grid-template-columns: 1fr; }
+.badge.badge-warn { background: color-mix(in srgb, var(--warn) 22%, transparent); color: inherit; margin-left: 6px; font-size: 0.72rem; }

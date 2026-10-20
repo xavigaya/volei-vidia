@@ -1,6 +1,6 @@
 [package]
 name = "volei-vidia"
-version = "0.10.0"
+version = "0.10.1"
 description = "Volei VidIA — estadístiques de voleibol amb vídeo"
 authors = ["Volei VidIA"]
 edition = "2021"
