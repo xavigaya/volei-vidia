@@ -36,7 +36,7 @@ const ENTITIES = [
   'video',
   'session',
 ];
-const ACTIONS = ['insert', 'update', 'delete', 'set_start', 'undo', 'login', 'export', 'import', 'upload'];
+const ACTIONS = ['insert', 'update', 'delete', 'set_start', 'lineup_fix', 'undo', 'login', 'export', 'import', 'upload'];
 const PAGE = 100;
 
 interface Filters {

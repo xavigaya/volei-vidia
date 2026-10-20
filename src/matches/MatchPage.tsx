@@ -125,22 +125,24 @@ export function MatchPage() {
 
       {m.fromCache && <div className="notice small">{t('offline.cachedData')}</div>}
       {m.error && <ErrorBox message={m.error} />}
-      {tab === 'live' ? (
-        m.players.length === 0 && m.events.length === 0 ? (
+      {/* La pantalla de codificació es manté muntada (amagada) en canviar de
+          pestanya perquè el vídeo no es reiniciï */}
+      {m.players.length === 0 && m.events.length === 0 ? (
+        tab === 'live' && (
           <div className="card stack">
             <p>{t('matches.needRoster')}</p>
             <button className="btn btn-primary" onClick={() => setParams({ tab: 'roster' })}>
               {t('matches.tabRoster')}
             </button>
           </div>
-        ) : (
-          <LiveScoring m={m} clipFilter={params.get('clip')} />
         )
-      ) : tab === 'stats' ? (
-        <MatchStatsView m={m} onShowClips={(f) => setParams({ clip: filterToParam(f) })} />
       ) : (
-        <RosterEditor m={m} />
+        <div hidden={tab !== 'live'}>
+          <LiveScoring m={m} clipFilter={params.get('clip')} active={tab === 'live'} />
+        </div>
       )}
+      {tab === 'stats' && <MatchStatsView m={m} onShowClips={(f) => setParams({ clip: filterToParam(f) })} />}
+      {tab === 'roster' && <RosterEditor m={m} />}
     </div>
   );
 }

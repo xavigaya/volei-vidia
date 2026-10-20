@@ -40,7 +40,10 @@ function isTouch(): boolean {
   return typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
 }
 
-export function LiveScoring({ m, clipFilter }: { m: UseMatch; clipFilter?: string | null }) {
+// active = false: la pestanya està amagada (estadístiques, convocatòria). El
+// component es manté muntat perquè el vídeo no es reiniciï, però s'atura i no
+// escolta el teclat.
+export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; clipFilter?: string | null; active?: boolean }) {
   const { t } = useTranslation();
   const club = useCurrentClub();
   const match = m.match!;
@@ -66,6 +69,7 @@ export function LiveScoring({ m, clipFilter }: { m: UseMatch; clipFilter?: strin
     });
   const [message, setMessage] = useState<{ kind: 'error' | 'info'; text: string } | null>(null);
   const [lineupOpen, setLineupOpen] = useState(false);
+  const [fixOpen, setFixOpen] = useState(false);
   const [subSide, setSubSide] = useState<Side | null>(null);
   const [liberoSide, setLiberoSide] = useState<Side | null>(null);
   const [command, setCommand] = useState('');
@@ -104,6 +108,13 @@ export function LiveScoring({ m, clipFilter }: { m: UseMatch; clipFilter?: strin
       autoPaused.current = false;
     }, autoPause.delay * 1000);
   };
+  useEffect(() => {
+    if (!active) {
+      if (resumeTimer.current) window.clearTimeout(resumeTimer.current);
+      autoPaused.current = false;
+      playerRef.current?.pause();
+    }
+  }, [active]);
   const seekTo = (time: number | null | undefined) => {
     if (time == null || !playerRef.current) return;
     playerRef.current.seek(time - 3);
@@ -152,16 +163,16 @@ export function LiveScoring({ m, clipFilter }: { m: UseMatch; clipFilter?: strin
 
   // Obre l'alineació automàticament quan toca
   useEffect(() => {
-    if (canCode && state.phase === 'awaiting_lineup' && m.players.length > 0) setLineupOpen(true);
-  }, [canCode, state.phase, state.currentSet, m.players.length]);
+    if (active && canCode && state.phase === 'awaiting_lineup' && m.players.length > 0) setLineupOpen(true);
+  }, [active, canCode, state.phase, state.currentSet, m.players.length]);
 
   // Focus a la línia d'ordres en ordinador; Ctrl+Z desfà
   useEffect(() => {
-    if (canCode && !isTouch()) cmdRef.current?.focus();
-  }, [canCode, state.lastSeq]);
+    if (active && canCode && !isTouch()) cmdRef.current?.focus();
+  }, [active, canCode, state.lastSeq]);
 
   useEffect(() => {
-    if (!canCode) return;
+    if (!canCode || !active) return;
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
         const target = e.target as HTMLElement;
@@ -173,7 +184,7 @@ export function LiveScoring({ m, clipFilter }: { m: UseMatch; clipFilter?: strin
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [canCode, command, m]);
+  }, [active, canCode, command, m]);
 
   async function onCommand(e: FormEvent) {
     e.preventDefault();
@@ -194,6 +205,14 @@ export function LiveScoring({ m, clipFilter }: { m: UseMatch; clipFilter?: strin
   }
 
   const log = useMemo(() => buildLog(m.events, state.rules), [m.events, state.rules]);
+  // Alineació inicial del set en curs (o de l'últim jugat), per poder-la corregir
+  const lineupEvent = useMemo(() => {
+    for (let i = m.events.length - 1; i >= 0; i--) {
+      const e = m.events[i];
+      if (e.type === 'lineup') return e;
+    }
+    return null;
+  }, [m.events]);
 
   return (
     <div className={`live-layout ${source ? 'with-video' : ''}`}>
@@ -205,6 +224,7 @@ export function LiveScoring({ m, clipFilter }: { m: UseMatch; clipFilter?: strin
           playerRef={playerRef}
           autoPause={autoPause}
           setAutoPause={setAutoPause}
+          active={active}
         />
         {source ? (
           <ClipsPanel
@@ -367,6 +387,11 @@ export function LiveScoring({ m, clipFilter }: { m: UseMatch; clipFilter?: strin
                 {t('live.lineupForSet', { n: nextSet })}
               </button>
             )}
+            {lineupEvent && (
+              <button className="btn" onClick={() => setFixOpen(true)} title={t('live.fixLineupHelp')}>
+                ✎ {t('live.fixLineup', { n: lineupEvent.set })}
+              </button>
+            )}
             <button className="btn" onClick={() => void m.undo()} disabled={m.events.length === 0} title="Ctrl+Z">
               ↶ {t('live.undo')}
             </button>
@@ -426,11 +451,11 @@ export function LiveScoring({ m, clipFilter }: { m: UseMatch; clipFilter?: strin
         )}
       </section>
 
-      <Modal title={t('legend.title')} open={legendOpen} onClose={() => setLegendOpen(false)}>
+      <Modal title={t('legend.title')} open={legendOpen && active} onClose={() => setLegendOpen(false)}>
         <Legend />
       </Modal>
 
-      <Modal title={t('live.lineupForSet', { n: nextSet })} open={lineupOpen && state.phase === 'awaiting_lineup'} onClose={() => setLineupOpen(false)}>
+      <Modal title={t('live.lineupForSet', { n: nextSet })} open={lineupOpen && active && state.phase === 'awaiting_lineup'} onClose={() => setLineupOpen(false)}>
         <LineupForm
           setNumber={nextSet}
           isTiebreak={nextSet === state.rules.setsToWin * 2 - 1}
@@ -448,7 +473,40 @@ export function LiveScoring({ m, clipFilter }: { m: UseMatch; clipFilter?: strin
         />
       </Modal>
 
-      <Modal title={subSide ? `${t('live.sub')} · ${names[subSide]}` : ''} open={subSide !== null} onClose={() => setSubSide(null)}>
+      <Modal
+        title={lineupEvent ? t('live.fixLineup', { n: lineupEvent.set }) : ''}
+        open={fixOpen && !!lineupEvent && active}
+        onClose={() => setFixOpen(false)}
+      >
+        {lineupEvent && lineupEvent.type === 'lineup' && (
+          <>
+            <p className="notice small">{t('live.fixLineupHelp')}</p>
+            <LineupForm
+              setNumber={lineupEvent.set}
+              isTiebreak={lineupEvent.set === state.rules.setsToWin * 2 - 1}
+              players={m.players}
+              teamNames={{ H: match.home.name, A: match.away.name }}
+              initial={{ home: lineupEvent.home, away: lineupEvent.away, serving: lineupEvent.serving }}
+              onCancel={() => setFixOpen(false)}
+              onSubmit={async (v) => {
+                const r = await m.editEvent(lineupEvent.seq, { type: 'lineup', ...v });
+                if (!r.ok) {
+                  const ev = m.events.find((e) => e.seq === r.seq);
+                  return t('live.fixLineupInvalid', {
+                    what: ev ? `${eventCode(ev)} (${describe(t, ev, names, playerMaps)})` : `#${r.seq}`,
+                    reason: engineErrorText(t, r.error),
+                  });
+                }
+                setFixOpen(false);
+                setMessage({ kind: 'info', text: t('live.fixLineupDone', { n: lineupEvent.set }) });
+                return null;
+              }}
+            />
+          </>
+        )}
+      </Modal>
+
+      <Modal title={subSide ? `${t('live.sub')} · ${names[subSide]}` : ''} open={subSide !== null && active} onClose={() => setSubSide(null)}>
         {subSide && (
           <SubForm
             state={state}
@@ -461,7 +519,7 @@ export function LiveScoring({ m, clipFilter }: { m: UseMatch; clipFilter?: strin
         )}
       </Modal>
 
-      <Modal title={liberoSide ? `${t('positions.L')} · ${names[liberoSide]}` : ''} open={liberoSide !== null} onClose={() => setLiberoSide(null)}>
+      <Modal title={liberoSide ? `${t('positions.L')} · ${names[liberoSide]}` : ''} open={liberoSide !== null && active} onClose={() => setLiberoSide(null)}>
         {liberoSide && (
           <LiberoForm
             state={state}

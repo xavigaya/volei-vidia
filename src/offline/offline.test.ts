@@ -33,6 +33,19 @@ describe('cua de canvis', () => {
     expect(q[0].kind === 'insert_event' && q[0].row.video_time).toBe(42);
   });
 
+  test('la correcció d’una inserció pendent es fa a la mateixa inserció', () => {
+    const q = enqueueOp([ins(3)], { id: 'e', kind: 'event_data', matchId: 'm', seq: 3, data: { side: 'A' } });
+    expect(q).toHaveLength(1);
+    expect(q[0].kind === 'insert_event' && q[0].row.data).toEqual({ side: 'A' });
+  });
+
+  test('només es manté l’última correcció d’un esdeveniment enviat', () => {
+    let q: Op[] = [];
+    q = enqueueOp(q, { id: 'a', kind: 'event_data', matchId: 'm', seq: 1, data: { x: 1 } });
+    q = enqueueOp(q, { id: 'b', kind: 'event_data', matchId: 'm', seq: 1, data: { x: 2 } });
+    expect(q.map((o) => o.id)).toEqual(['b']);
+  });
+
   test('només es manté una actualització del partit', () => {
     let q: Op[] = [];
     q = enqueueOp(q, { id: 'a', kind: 'match_update', matchId: 'm', patch: { home_sets: 1 } });
@@ -48,6 +61,11 @@ describe('fusió amb el servidor', () => {
     const merged = mergePending(server, [del(3), ins(3, 'x'), ins(4), { id: 't', kind: 'event_time', matchId: 'm', seq: 1, time: 9 }], 'm', toEvent);
     expect(merged.map((e) => e.seq)).toEqual([1, 2, 3, 4]);
     expect(merged[0].videoTime).toBe(9);
+  });
+
+  test('aplica les correccions pendents', () => {
+    const merged = mergePending([toEvent(row(1))], [{ id: 'e', kind: 'event_data', matchId: 'm', seq: 1, data: { side: 'A' } }], 'm', toEvent);
+    expect(merged[0]).toMatchObject({ seq: 1, type: 'point', side: 'A' });
   });
 
   test('ignora operacions d’altres partits', () => {

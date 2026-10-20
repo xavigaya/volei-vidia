@@ -283,7 +283,11 @@
     "clearPositions": "Esborra",
     "swapSidesShort": "Costats",
     "error": "Error",
-    "errorHelp": "Error de {{team}}: punt per al rival"
+    "errorHelp": "Error de {{team}}: punt per al rival",
+    "fixLineup": "Alineació del set {{n}}",
+    "fixLineupHelp": "Corregeix l’alineació inicial d’aquest set (posicions, líberos o primer servei). Es tornen a calcular totes les rotacions del set; si alguna acció ja codificada deixés de ser vàlida, no es desa.",
+    "fixLineupInvalid": "No es pot aplicar: amb aquesta alineació, l’acció {{what}} deixaria de ser vàlida ({{reason}}). Revisa-la o desfés-la abans.",
+    "fixLineupDone": "S’ha corregit l’alineació del set {{n}}."
   },
   "engine": {
     "needs_lineup": "Primer cal introduir l'alineació del set.",
@@ -767,7 +771,8 @@
     "entity_match": "Partit (fitxer)",
     "entity_file": "Fitxer",
     "entity_video": "Vídeo",
-    "entity_session": "Sessió"
+    "entity_session": "Sessió",
+    "action_lineup_fix": "Correcció d’alineació"
   },
   "radar": {
     "title": "Gràfica de rendiment",

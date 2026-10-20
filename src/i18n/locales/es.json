@@ -283,7 +283,11 @@
     "clearPositions": "Borrar",
     "swapSidesShort": "Lados",
     "error": "Error",
-    "errorHelp": "Error de {{team}}: punto para el rival"
+    "errorHelp": "Error de {{team}}: punto para el rival",
+    "fixLineup": "Alineación del set {{n}}",
+    "fixLineupHelp": "Corrige la alineación inicial de este set (posiciones, líberos o primer saque). Se recalculan todas las rotaciones del set; si alguna acción ya codificada dejara de ser válida, no se guarda.",
+    "fixLineupInvalid": "No se puede aplicar: con esta alineación, la acción {{what}} dejaría de ser válida ({{reason}}). Revísala o deshazla antes.",
+    "fixLineupDone": "Se ha corregido la alineación del set {{n}}."
   },
   "engine": {
     "needs_lineup": "Primero hay que introducir la alineación del set.",
@@ -767,7 +771,8 @@
     "entity_match": "Partido (archivo)",
     "entity_file": "Archivo",
     "entity_video": "Vídeo",
-    "entity_session": "Sesión"
+    "entity_session": "Sesión",
+    "action_lineup_fix": "Corrección de alineación"
   },
   "radar": {
     "title": "Gráfica de rendimiento",

@@ -223,6 +223,23 @@ export function useMatch(matchId: string) {
     [match],
   );
 
+  // Corregeix un esdeveniment ja desat (p. ex. l'alineació inicial d'un set).
+  // Es reprodueix tot el partit amb la correcció: si alguna acció posterior
+  // deixa de ser vàlida, no es desa i es retorna el primer problema.
+  const editEvent = useCallback(
+    async (seq: number, data: MatchEventData): Promise<{ ok: true } | { ok: false; seq: number; error: EngineError }> => {
+      if (!match || !rules) return { ok: false, seq, error: new EngineError('needs_lineup') };
+      const before = new Set(replay(events, rules, rosters).errors.map((e) => e.seq));
+      const next = events.map((e) => (e.seq === seq ? ({ ...data, seq: e.seq, set: e.set, videoTime: e.videoTime, at: e.at } as MatchEvent) : e));
+      const fresh = replay(next, rules, rosters).errors.filter((e) => !before.has(e.seq));
+      if (fresh.length) return { ok: false, seq: fresh[0].seq, error: fresh[0].error };
+      setEvents(next);
+      await enqueue({ kind: 'event_data', matchId: match.id, seq, data: eventToData(data) });
+      return { ok: true };
+    },
+    [match, rules, rosters, events],
+  );
+
   // Sincronitza tot el partit a partir d'una acció i el seu instant de vídeo
   const syncVideo = useCallback(
     async (seq: number, time: number, onlyMissing: boolean) => {
@@ -290,6 +307,7 @@ export function useMatch(matchId: string) {
     undo,
     claim,
     setEventTime,
+    editEvent,
     syncVideo,
     saveVideo,
     updateMatch,

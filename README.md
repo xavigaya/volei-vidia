@@ -96,6 +96,8 @@ Per fer-ho servir en un pavelló sense cobertura: obre el partit abans de sortir
 - **Registre d'accions** automàtic (altes, modificacions i baixes de clubs, usuaris, equips, jugadors, plantilles, partits i convocatòries; inici de cada set i desfer) i des de l'aplicació (inicis de sessió, exportacions, importacions, pujades a YouTube). Només per a superadministradors, amb filtres, detall dels canvis i exportació a Excel. Es conserva 3 mesos.
 - Estadístiques del partit: selector *El nostre equip / Rival* per a totes les seccions.
 - **Gràfica de teranyina** (8 eixos: servei, recepció, atac, eficàcia d'atac, bloqueig, defensa, side-out i break-point) al partit (els dos equips superposats), a les estadístiques acumulades i com a segona pàgina de l'informe del partit en PDF.
+- El vídeo no es reinicia en canviar de pestanya del partit (s'atura i continua on era) i cada dispositiu recorda on s'havia quedat cada vídeo.
+- Correcció de l'alineació inicial d'un set ja començat (botó *✎ Alineació del set*): es recalculen les rotacions i no es desa si alguna acció codificada deixa de ser vàlida.
 
 ## Tecnologia
 

@@ -1,7 +1,7 @@
 {
   "name": "volei-vidia",
   "private": true,
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "Volei VidIA \u2014 estad\u00edstiques de voleibol amb v\u00eddeo, compatible amb DataVolley",
   "type": "module",
   "scripts": {

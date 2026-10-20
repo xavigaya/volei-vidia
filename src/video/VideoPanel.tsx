@@ -15,6 +15,7 @@ interface Props {
   playerRef: RefObject<PlayerHandle | null>;
   autoPause: AutoPause;
   setAutoPause: (v: AutoPause) => void;
+  active?: boolean;
 }
 
 const RATES = [0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -24,7 +25,7 @@ export function sourceFromMatch(url: string | null | undefined): VideoSource | n
   return id ? { kind: 'youtube', id } : null;
 }
 
-export function VideoPanel({ m, source, setSource, playerRef, autoPause, setAutoPause }: Props) {
+export function VideoPanel({ m, source, setSource, playerRef, autoPause, setAutoPause, active = true }: Props) {
   const { t } = useTranslation();
   const match = m.match!;
   const [url, setUrl] = useState(match.video_url ?? '');
@@ -42,7 +43,7 @@ export function VideoPanel({ m, source, setSource, playerRef, autoPause, setAuto
 
   // Dreceres: Ctrl+Espai (reprodueix/pausa), Ctrl+←/→ (−3/+3 s; amb Maj, 10 s)
   useEffect(() => {
-    if (!source) return;
+    if (!source || !active) return;
     const onKey = (e: KeyboardEvent) => {
       if (!(e.ctrlKey || e.metaKey)) return;
       if (e.code === 'Space') {
@@ -56,7 +57,7 @@ export function VideoPanel({ m, source, setSource, playerRef, autoPause, setAuto
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [source, playerRef, skip]);
+  }, [source, active, playerRef, skip]);
 
   async function onYouTube(e: FormEvent) {
     e.preventDefault();
@@ -128,7 +129,12 @@ export function VideoPanel({ m, source, setSource, playerRef, autoPause, setAuto
 
   return (
     <section className="card video-panel stack">
-      <VideoPlayer ref={playerRef} source={source} onError={onPlayerError} />
+      <VideoPlayer
+        ref={playerRef}
+        source={source}
+        onError={onPlayerError}
+        resumeKey={`${match.id}:${source.kind === 'youtube' ? source.id : source.name}`}
+      />
       <div className="video-controls row wrap">
         <button className="btn btn-sm" onClick={() => skip(-10)} title="Ctrl+Shift+←">
           ⏪ 10

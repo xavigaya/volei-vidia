@@ -283,7 +283,11 @@
     "clearPositions": "Clear",
     "swapSidesShort": "Sides",
     "error": "Error",
-    "errorHelp": "{{team}} error: point to the opponent"
+    "errorHelp": "{{team}} error: point to the opponent",
+    "fixLineup": "Set {{n}} line-up",
+    "fixLineupHelp": "Fix this set’s starting line-up (positions, liberos or first serve). All the set’s rotations are recalculated; if any coded action would become invalid, nothing is saved.",
+    "fixLineupInvalid": "Cannot apply: with this line-up, action {{what}} would become invalid ({{reason}}). Review or undo it first.",
+    "fixLineupDone": "Set {{n}} line-up fixed."
   },
   "engine": {
     "needs_lineup": "Enter the set line-up first.",
@@ -767,7 +771,8 @@
     "entity_match": "Match (file)",
     "entity_file": "File",
     "entity_video": "Video",
-    "entity_session": "Session"
+    "entity_session": "Session",
+    "action_lineup_fix": "Line-up fix"
   },
   "radar": {
     "title": "Performance chart",

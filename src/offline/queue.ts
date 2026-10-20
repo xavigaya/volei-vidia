@@ -17,6 +17,7 @@ export type Op =
   | { id: string; kind: 'insert_event'; matchId: string; seq: number; row: EventRowPayload; error?: string }
   | { id: string; kind: 'delete_event'; matchId: string; seq: number; error?: string }
   | { id: string; kind: 'event_time'; matchId: string; seq: number; time: number | null; error?: string }
+  | { id: string; kind: 'event_data'; matchId: string; seq: number; data: Record<string, unknown>; error?: string }
   | { id: string; kind: 'match_update'; matchId: string; patch: Record<string, unknown>; error?: string };
 
 // Operació nova (sense identificador), conservant la distinció per tipus
@@ -36,7 +37,7 @@ export function enqueueOp(ops: Op[], op: Op): Op[] {
     if (idx >= 0) {
       return ops.filter((o, i) => i < idx || !(o.matchId === op.matchId && 'seq' in o && o.seq === op.seq));
     }
-    return [...ops.filter((o) => !(o.kind === 'event_time' && o.matchId === op.matchId && o.seq === op.seq)), op];
+    return [...ops.filter((o) => !((o.kind === 'event_time' || o.kind === 'event_data') && o.matchId === op.matchId && o.seq === op.seq)), op];
   }
   if (op.kind === 'event_time') {
     const pending = ops.find((o) => o.kind === 'insert_event' && o.matchId === op.matchId && o.seq === op.seq && !o.error);
@@ -44,6 +45,14 @@ export function enqueueOp(ops: Op[], op: Op): Op[] {
       return ops.map((o) => (o === pending ? { ...pending, row: { ...pending.row, video_time: op.time } } : o));
     }
     return [...ops.filter((o) => !(o.kind === 'event_time' && o.matchId === op.matchId && o.seq === op.seq)), op];
+  }
+  if (op.kind === 'event_data') {
+    // Correcció d'un esdeveniment (p. ex. l'alineació d'un set)
+    const pending = ops.find((o) => o.kind === 'insert_event' && o.matchId === op.matchId && o.seq === op.seq && !o.error);
+    if (pending && pending.kind === 'insert_event') {
+      return ops.map((o) => (o === pending ? { ...pending, row: { ...pending.row, data: op.data } } : o));
+    }
+    return [...ops.filter((o) => !(o.kind === 'event_data' && o.matchId === op.matchId && o.seq === op.seq && !o.error)), op];
   }
   if (op.kind === 'match_update') {
     const prev = ops.find((o) => o.kind === 'match_update' && o.matchId === op.matchId && !o.error);
@@ -62,6 +71,12 @@ export function mergePending(server: MatchEvent[], ops: Op[], matchId: string, t
   const bySeq = new Map<number, MatchEvent>();
   for (const e of server) if (!deleted.has(e.seq)) bySeq.set(e.seq, e);
   for (const o of mine) if (o.kind === 'insert_event') bySeq.set(o.seq, toEvent(o.row));
+  // Correccions pendents: el contingut nou substitueix el del servidor
+  for (const o of mine) {
+    if (o.kind !== 'event_data') continue;
+    const e = bySeq.get(o.seq);
+    if (e) bySeq.set(o.seq, { ...(o.data as object), type: e.type, seq: e.seq, set: e.set, videoTime: e.videoTime, at: e.at } as MatchEvent);
+  }
   return [...bySeq.values()]
     .map((e) => (times.has(e.seq) ? { ...e, videoTime: times.get(e.seq) ?? null } : e))
     .sort((a, b) => a.seq - b.seq);

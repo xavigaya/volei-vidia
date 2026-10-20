@@ -67,6 +67,10 @@ async function send(op: Op): Promise<{ message: string; code?: string } | null> 
       const { error } = await supabase.from('match_events').update({ video_time: op.time }).eq('match_id', op.matchId).eq('seq', op.seq);
       return error;
     }
+    case 'event_data': {
+      const { error } = await supabase.from('match_events').update({ data: op.data }).eq('match_id', op.matchId).eq('seq', op.seq);
+      return error;
+    }
     case 'match_update': {
       const { error } = await supabase.from('matches').update(op.patch).eq('id', op.matchId);
       return error;
