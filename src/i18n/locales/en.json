@@ -43,7 +43,8 @@
     "haveAccount": "Already have an account? Sign in",
     "noAccount": "No account? Create one",
     "checkEmail": "We sent you an email to confirm your account. Open the link and come back here.",
-    "passwordHint": "At least 8 characters"
+    "passwordHint": "At least 8 characters",
+    "signOutPending": "There are {{count}} changes that have not been sent to the server yet (no connection). If you sign out they will be lost, because the data stored on this device is deleted. Sign out anyway?"
   },
   "nav": {
     "home": "Home",
@@ -83,7 +84,8 @@
     "deleteClub": "Delete the club and all its data",
     "deleteClubConfirm": "Type the club name to confirm:",
     "noClubsSuper": "There are no clubs yet. Create one.",
-    "noClubsInvite": "You are not part of any club yet. Ask your club (or platform) administrator to invite you with this email."
+    "noClubsInvite": "You are not part of any club yet. Ask your club (or platform) administrator to invite you with this email.",
+    "logoInvalid": "The logo must be PNG, JPEG or WebP and at most 1 MB."
   },
   "home": {
     "welcome": "Welcome to {{club}}",

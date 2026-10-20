@@ -110,6 +110,19 @@ export async function discardFailed() {
   await save();
 }
 
+// Nombre de canvis que encara no han arribat al servidor
+export async function pendingCount(): Promise<number> {
+  await load();
+  return ops.length;
+}
+
+// Buida la cua en memòria (les dades del disc les esborra kvClear)
+export function resetOutbox() {
+  ops = [];
+  loaded = Promise.resolve();
+  emit();
+}
+
 // Sincronització automàtica: en recuperar la connexió i periòdicament
 let started = false;
 export function startAutoSync() {

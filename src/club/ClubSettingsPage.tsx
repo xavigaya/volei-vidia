@@ -60,7 +60,13 @@ export function ClubSettingsPage() {
 
   async function onLogo(file: File) {
     setError(null);
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+    // Només imatges sense codi (no SVG) i d'1 MB com a màxim (igual que el servidor)
+    const ALLOWED: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
+    if (!ALLOWED[file.type] || file.size > 1024 * 1024) {
+      setError(t('club.logoInvalid'));
+      return;
+    }
+    const ext = ALLOWED[file.type];
     const path = `${club.id}/logo-${Date.now()}.${ext}`;
     const up = await supabase.storage.from(LOGO_BUCKET).upload(path, file, { upsert: true, contentType: file.type });
     if (up.error) {
@@ -224,7 +230,7 @@ export function ClubSettingsPage() {
                 {t('club.uploadLogo')}
                 <input
                   type="file"
-                  accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                  accept="image/png,image/jpeg,image/webp"
                   hidden
                   onChange={(e) => {
                     const f = e.target.files?.[0];

@@ -43,7 +43,8 @@
     "haveAccount": "Ja tens compte? Inicia la sessió",
     "noAccount": "No tens compte? Crea'n un",
     "checkEmail": "T'hem enviat un correu per confirmar el compte. Obre l'enllaç i torna aquí.",
-    "passwordHint": "Mínim 8 caràcters"
+    "passwordHint": "Mínim 8 caràcters",
+    "signOutPending": "Hi ha {{count}} canvis que encara no s'han enviat al servidor (no hi ha connexió). Si tanques la sessió es perdran, perquè s'esborren les dades desades en aquest dispositiu. Vols tancar-la igualment?"
   },
   "nav": {
     "home": "Inici",
@@ -83,7 +84,8 @@
     "deleteClub": "Elimina el club i totes les seves dades",
     "deleteClubConfirm": "Escriu el nom del club per confirmar-ho:",
     "noClubsSuper": "Encara no hi ha cap club. Crea’n un.",
-    "noClubsInvite": "Encara no formes part de cap club. Demana a l’administrador del teu club (o de la plataforma) que t’hi convidi amb aquest correu."
+    "noClubsInvite": "Encara no formes part de cap club. Demana a l’administrador del teu club (o de la plataforma) que t’hi convidi amb aquest correu.",
+    "logoInvalid": "El logotip ha de ser PNG, JPEG o WebP i com a màxim d'1 MB."
   },
   "home": {
     "welcome": "Benvingut/da a {{club}}",
