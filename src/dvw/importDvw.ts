@@ -140,13 +140,26 @@ export async function importDvwMatch(dv: ParsedDvw, opts: DvwImportOptions): Pro
     if (r.error) throw new Error(r.error.message);
   }
 
-  // 5. Esdeveniments (per blocs)
+  // 5. Esdeveniments (per blocs). L'hora de cada línia del fitxer es desa com a
+  // hora de l'esdeveniment: així es pot sincronitzar després amb el vídeo.
   let set = 0;
+  const base = dv.date ? new Date(`${dv.date}T00:00:00`).getTime() : Date.now() - 86400000;
+  let dayOffset = 0;
+  let prevClock: number | null = null;
+  const fallback = new Date().toISOString();
   const rows = imp.events.map((ev, i) => {
     if (ev.type === 'lineup') set += 1;
+    let at = fallback;
+    if (ev.clock != null) {
+      // Partit que passa de mitjanit
+      if (prevClock != null && ev.clock < prevClock - 12 * 3600) dayOffset += 86400;
+      prevClock = ev.clock;
+      at = new Date(base + (ev.clock + dayOffset) * 1000).toISOString();
+    }
     const data: Record<string, unknown> = { ...ev };
     delete data.type;
     delete data.videoTime;
+    delete data.clock;
     return {
       match_id: matchId,
       club_id: opts.clubId,
@@ -156,6 +169,7 @@ export async function importDvwMatch(dv: ParsedDvw, opts: DvwImportOptions): Pro
       data,
       video_time: ev.videoTime,
       created_by: opts.userId,
+      created_at: at,
     };
   });
   for (let i = 0; i < rows.length; i += 500) {

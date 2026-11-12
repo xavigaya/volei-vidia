@@ -242,7 +242,7 @@ export function useMatch(matchId: string) {
 
   // Sincronitza tot el partit a partir d'una acció i el seu instant de vídeo
   const syncVideo = useCallback(
-    async (seq: number, time: number, onlyMissing: boolean) => {
+    async (seq: number, time: number, onlyMissing: boolean, fromHere = false) => {
       if (!match) return 0;
       // Primer s'envien els canvis pendents (la sincronització es fa al servidor)
       await flush();
@@ -251,6 +251,8 @@ export function useMatch(matchId: string) {
         p_seq: seq,
         p_time: time,
         p_only_missing: onlyMissing,
+        // (només s'envia si cal: així funciona també sense la migració 0013)
+        ...(fromHere ? { p_from_here: true } : {}),
       });
       if (error) {
         setError(error.message);

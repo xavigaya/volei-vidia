@@ -720,3 +720,4 @@ input.search { max-width: 260px; }
 .radar-table th, .radar-table td { padding: 5px 6px; }
 .summaries .radar { grid-template-columns: 1fr; }
 .badge.badge-warn { background: color-mix(in srgb, var(--warn) 22%, transparent); color: inherit; margin-left: 6px; font-size: 0.72rem; }
+.segmented.small-seg button { padding: 4px 8px; font-size: 0.8rem; }

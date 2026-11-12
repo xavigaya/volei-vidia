@@ -55,6 +55,7 @@ export interface DvwLine {
   code: string;
   set: number | null;
   videoTime: number | null;
+  clock: number | null; // hora en què es va codificar (segons del dia)
   rotation: Record<Side, number[] | null>; // P1..P6
 }
 
@@ -165,7 +166,9 @@ export function parseDvw(text: string): ParsedDvw {
       const v = f.slice(from, from + 6).map((x) => num(x));
       return v.length === 6 && v.every((x) => x != null) ? (v as number[]) : null;
     };
-    return { code: f[0].trim(), set: num(f[8]), videoTime: num(f[12]), rotation: { H: rot(14), A: rot(20) } };
+    const hm = /^(\d{1,2})[.:](\d{2})[.:](\d{2})$/.exec((f[7] ?? '').trim());
+    const clock = hm ? Number(hm[1]) * 3600 + Number(hm[2]) * 60 + Number(hm[3]) : null;
+    return { code: f[0].trim(), set: num(f[8]), videoTime: num(f[12]), clock, rotation: { H: rot(14), A: rot(20) } };
   });
 
   const videoLine = (sec.get('VIDEO') ?? [])[0];
@@ -188,7 +191,8 @@ export function parseDvw(text: string): ParsedDvw {
 // Conversió de les línies de scout a esdeveniments del motor
 // ---------------------------------------------------------------------
 export interface ImportResult {
-  events: (MatchEventData & { videoTime: number | null })[];
+  // clock: hora de la línia (segons del dia), per sincronitzar després amb el vídeo
+  events: (MatchEventData & { videoTime: number | null; clock: number | null })[];
   warnings: string[];
   state: MatchState;
 }
@@ -201,10 +205,12 @@ export function dvwToEvents(dv: ParsedDvw, baseRules: MatchRules = DEFAULT_RULES
   const warnings: string[] = [];
   const liberos = { H: dv.players.H.filter((p) => p.libero).map((p) => p.number).slice(0, 2), A: dv.players.A.filter((p) => p.libero).map((p) => p.number).slice(0, 2) };
 
-  const push = (ev: MatchEventData, vt: number | null, line: string): boolean => {
+  let lastClock: number | null = null;
+  const push = (ev: MatchEventData, vt: number | null, line: string, clock: number | null = lastClock): boolean => {
     try {
       state = applyEvent(state, ev);
-      events.push({ ...ev, videoTime: vt });
+      if (clock != null) lastClock = clock;
+      events.push({ ...ev, videoTime: vt, clock });
       return true;
     } catch (e) {
       warnings.push(`${line}: ${(e as Error).message}`);
@@ -261,11 +267,11 @@ export function dvwToEvents(dv: ParsedDvw, baseRules: MatchRules = DEFAULT_RULES
     for (let i = dv.scout.length - 1; i >= 0; i--) {
       const c = dv.scout[i].code;
       if (/^\*\*\d/.test(c)) next = null;
-      else if (/^[*a]p\d{1,2}:\d{1,2}/i.test(c)) next = c[0] === '*' ? 'H' : 'A';
+      else if (/^[*a]p\d{1,2}:\d{1,2}/.test(c)) next = c[0] === '*' ? 'H' : 'A';
       rallyWinner[i] = next;
     }
   }
-  const hasPointLines = dv.scout.some((l) => /^[*a]p\d{1,2}:\d{1,2}/i.test(l.code));
+  const hasPointLines = dv.scout.some((l) => /^[*a]p\d{1,2}:\d{1,2}/.test(l.code));
   let rallyPointGiven = false;
 
   dv.scout.forEach((line, idx) => {
@@ -279,12 +285,12 @@ export function dvwToEvents(dv: ParsedDvw, baseRules: MatchRules = DEFAULT_RULES
       return;
     }
 
-    const isPlayLine = SKILL_RE.test(code) || /^[*a]p\d/i.test(code) || /^[*a]c\d/i.test(code) || /^[*a]T$/.test(code);
+    const isPlayLine = SKILL_RE.test(code) || /^[*a]p\d/.test(code) || /^[*a]c\d/i.test(code) || /^[*a]T$/.test(code);
     if (!isPlayLine) return;
 
     // Línia de punt amb el set ja acabat (p. ex. "ap17:25" després de l'acció
     // que el tanca): no obre un set nou. Només ho fa el primer punt (1:0 / 0:1).
-    const pl = /^[*a]p(\d{1,2}):(\d{1,2})/i.exec(code);
+    const pl = /^[*a]p(\d{1,2}):(\d{1,2})/.exec(code);
     if (pl && state.phase !== 'in_play' && Number(pl[1]) + Number(pl[2]) !== 1) return;
 
     // Inici de set: alineació a partir de la rotació de la primera línia
@@ -296,7 +302,7 @@ export function dvwToEvents(dv: ParsedDvw, baseRules: MatchRules = DEFAULT_RULES
         return;
       }
       const lu = (positions: number[], s: Side): TeamLineup => ({ positions, liberos: liberos[s].filter((n) => !positions.includes(n)) });
-      if (!push({ type: 'lineup', home: lu(h, 'H'), away: lu(a, 'A'), serving: firstServe(idx) }, line.videoTime, code)) return;
+      if (!push({ type: 'lineup', home: lu(h, 'H'), away: lu(a, 'A'), serving: firstServe(idx) }, line.videoTime, code, line.clock)) return;
     }
     if (state.phase !== 'in_play') return;
 
@@ -327,15 +333,16 @@ export function dvwToEvents(dv: ParsedDvw, baseRules: MatchRules = DEFAULT_RULES
         },
         line.videoTime,
         code,
+        line.clock,
       );
       if (state.score.H + state.score.A !== before) rallyPointGiven = true;
       return;
     }
-    let mm = /^[*a]p(\d{1,2}):(\d{1,2})/i.exec(code);
+    let mm = /^[*a]p(\d{1,2}):(\d{1,2})/.exec(code);
     if (mm) {
       // El punt ja s'ha comptat si l'acció final el donava; si no, s'afegeix
       const target = { H: Number(mm[1]), A: Number(mm[2]) };
-      if (state.score[side] < target[side]) push({ type: 'point', side }, line.videoTime, code);
+      if (state.score[side] < target[side]) push({ type: 'point', side }, line.videoTime, code, line.clock);
       rallyPointGiven = false;
       if (state.phase === 'in_play' && (state.score.H !== target.H || state.score.A !== target.A)) {
         warnings.push(`${code}: marcador ${state.score.H}-${state.score.A}`);
@@ -344,10 +351,10 @@ export function dvwToEvents(dv: ParsedDvw, baseRules: MatchRules = DEFAULT_RULES
     }
     mm = /^[*a]c(\d{1,2}):(\d{1,2})/i.exec(code);
     if (mm) {
-      push({ type: 'sub', side, out: Number(mm[1]), in: Number(mm[2]) }, line.videoTime, code);
+      push({ type: 'sub', side, out: Number(mm[1]), in: Number(mm[2]) }, line.videoTime, code, line.clock);
       return;
     }
-    if (/^[*a]T$/.test(code)) push({ type: 'timeout', side }, line.videoTime, code);
+    if (/^[*a]T$/.test(code)) push({ type: 'timeout', side }, line.videoTime, code, line.clock);
   });
   closeSet('final');
   return { events, warnings, state };

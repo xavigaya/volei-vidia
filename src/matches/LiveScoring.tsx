@@ -70,6 +70,8 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
   const [message, setMessage] = useState<{ kind: 'error' | 'info'; text: string } | null>(null);
   const [lineupOpen, setLineupOpen] = useState(false);
   const [fixOpen, setFixOpen] = useState(false);
+  // Filtre del registre: tots els sets (null) o un de concret
+  const [logSet, setLogSet] = useState<number | null>(null);
   const [subSide, setSubSide] = useState<Side | null>(null);
   const [liberoSide, setLiberoSide] = useState<Side | null>(null);
   const [command, setCommand] = useState('');
@@ -404,15 +406,30 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
 
       {/* Registre */}
       <section className="card event-log">
-        <h2>{t('live.log')}</h2>
+        <div className="row between wrap">
+          <h2>
+            {t('live.log')} <span className="muted small">({log.length})</span>
+          </h2>
+          {state.sets.length > 1 && (
+            <div className="segmented small-seg">
+              <button className={logSet == null ? 'on' : ''} onClick={() => setLogSet(null)}>
+                {t('live.logAll')}
+              </button>
+              {state.sets.map((x) => (
+                <button key={x.number} className={logSet === x.number ? 'on' : ''} onClick={() => setLogSet(x.number)}>
+                  {t('live.setN', { n: x.number })}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         {log.length === 0 ? (
           <p className="muted">{t('live.logEmpty')}</p>
         ) : (
           <ol reversed>
             {log
-              .slice()
+              .filter((row) => logSet == null || row.set === logSet)
               .reverse()
-              .slice(0, 60)
               .map((row) => (
                 <li key={row.ev.seq} className={`log-${row.ev.type}`}>
                   <span className="mono log-score">
@@ -441,6 +458,21 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
                           }}
                         >
                           ⏱
+                        </button>
+                      )}
+                      {canCode && (
+                        <button
+                          className="btn-icon small"
+                          title={t('video.syncFromRow')}
+                          onClick={() => {
+                            const now = playerRef.current?.getTime();
+                            if (now == null) return;
+                            void m.syncVideo(row.ev.seq, now, false, true).then((n) =>
+                              setMessage({ kind: 'info', text: t('video.synced', { count: n }) }),
+                            );
+                          }}
+                        >
+                          ⇥
                         </button>
                       )}
                     </span>

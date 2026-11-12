@@ -287,7 +287,8 @@
     "fixLineup": "Set {{n}} line-up",
     "fixLineupHelp": "Fix this set’s starting line-up (positions, liberos or first serve). All the set’s rotations are recalculated; if any coded action would become invalid, nothing is saved.",
     "fixLineupInvalid": "Cannot apply: with this line-up, action {{what}} would become invalid ({{reason}}). Review or undo it first.",
-    "fixLineupDone": "Set {{n}} line-up fixed."
+    "fixLineupDone": "Set {{n}} line-up fixed.",
+    "logAll": "All"
   },
   "engine": {
     "needs_lineup": "Enter the set line-up first.",
@@ -469,12 +470,17 @@
     "change": "Change video",
     "synced_one": "{{count}} action synced.",
     "synced_other": "{{count}} actions synced.",
-    "syncHelp": "If you coded the match without video (e.g. live), move the video to the exact moment of one of the actions (it is now at {{time}}) and choose it from the list. The other actions are placed according to the time they were coded.",
+    "syncHelp": "Put the video at the exact moment of a serve (now at {{time}}) and pick that serve in the list. The other actions are placed using the time they were coded (live, or the time in the DataVolley file).",
     "syncOnlyMissing": "Only actions that have no time yet",
     "goTo": "Show this play in the video",
     "setTime": "Set the current video time on this action",
     "autoPause": "Pause the video while typing codes",
-    "autoPauseResume": "Resume after"
+    "autoPauseResume": "Resume after",
+    "syncAll": "Apply to the whole match",
+    "syncFromHere": "Only from this action onwards (to fix a section, e.g. at the start of a set)",
+    "syncPick": "Serves in the set (score before the serve):",
+    "syncAfter": "Check a few actions in the log. If the video drifts at some point (pauses, cuts between sets), put the video at that action and press ⇥ in the log to re-sync from there.",
+    "syncFromRow": "Sync from this action: this one and the following ones are set from the current video time"
   },
   "clips": {
     "title": "Filtered video",

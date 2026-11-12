@@ -287,7 +287,8 @@
     "fixLineup": "Alineación del set {{n}}",
     "fixLineupHelp": "Corrige la alineación inicial de este set (posiciones, líberos o primer saque). Se recalculan todas las rotaciones del set; si alguna acción ya codificada dejara de ser válida, no se guarda.",
     "fixLineupInvalid": "No se puede aplicar: con esta alineación, la acción {{what}} dejaría de ser válida ({{reason}}). Revísala o deshazla antes.",
-    "fixLineupDone": "Se ha corregido la alineación del set {{n}}."
+    "fixLineupDone": "Se ha corregido la alineación del set {{n}}.",
+    "logAll": "Todos"
   },
   "engine": {
     "needs_lineup": "Primero hay que introducir la alineación del set.",
@@ -469,12 +470,17 @@
     "change": "Cambiar el vídeo",
     "synced_one": "Se ha sincronizado {{count}} acción.",
     "synced_other": "Se han sincronizado {{count}} acciones.",
-    "syncHelp": "Si has codificado el partido sin vídeo (por ejemplo, en directo), pon el vídeo en el instante exacto de una de las acciones (ahora está en {{time}}) y elígela en la lista. El resto de acciones se colocarán según la hora en que se codificaron.",
+    "syncHelp": "Pon el vídeo en el instante exacto de un saque (ahora está en {{time}}) y elige ese saque en la lista. El resto de acciones se colocarán según la hora en que se codificaron (en directo o la del archivo DataVolley).",
     "syncOnlyMissing": "Solo las acciones que aún no tienen instante",
     "goTo": "Mostrar la jugada en el vídeo",
     "setTime": "Asignar el instante actual del vídeo a esta acción",
     "autoPause": "Pausar el vídeo mientras escribo códigos",
-    "autoPauseResume": "Reanudar después de"
+    "autoPauseResume": "Reanudar después de",
+    "syncAll": "Aplicar a todo el partido",
+    "syncFromHere": "Solo desde esta acción en adelante (para corregir un tramo, p. ej. al inicio de un set)",
+    "syncPick": "Saques del set (marcador antes del saque):",
+    "syncAfter": "Comprueba algunas acciones en el registro. Si a partir de un momento el vídeo se desajusta (pausas, cortes entre sets), pon el vídeo en esa acción y pulsa ⇥ en el registro: se vuelve a sincronizar desde allí.",
+    "syncFromRow": "Sincronizar desde esta acción: esta y las siguientes se ajustan al instante actual del vídeo"
   },
   "clips": {
     "title": "Vídeos filtrados",

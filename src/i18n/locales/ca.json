@@ -287,7 +287,8 @@
     "fixLineup": "Alineació del set {{n}}",
     "fixLineupHelp": "Corregeix l’alineació inicial d’aquest set (posicions, líberos o primer servei). Es tornen a calcular totes les rotacions del set; si alguna acció ja codificada deixés de ser vàlida, no es desa.",
     "fixLineupInvalid": "No es pot aplicar: amb aquesta alineació, l’acció {{what}} deixaria de ser vàlida ({{reason}}). Revisa-la o desfés-la abans.",
-    "fixLineupDone": "S’ha corregit l’alineació del set {{n}}."
+    "fixLineupDone": "S’ha corregit l’alineació del set {{n}}.",
+    "logAll": "Tots"
   },
   "engine": {
     "needs_lineup": "Primer cal introduir l'alineació del set.",
@@ -469,12 +470,17 @@
     "change": "Canvia el vídeo",
     "synced_one": "S’ha sincronitzat {{count}} acció.",
     "synced_other": "S’han sincronitzat {{count}} accions.",
-    "syncHelp": "Si has codificat el partit sense vídeo (per exemple, en directe), posa el vídeo a l’instant exacte d’una de les accions (ara és a {{time}}) i tria-la a la llista. La resta d’accions es col·locaran segons l’hora en què es van codificar.",
+    "syncHelp": "Posa el vídeo a l’instant exacte en què es fa un servei (ara és a {{time}}) i tria aquest servei a la llista. La resta d’accions es col·locaran segons l’hora en què es van codificar (en directe o la del fitxer DataVolley).",
     "syncOnlyMissing": "Només les accions que encara no tenen instant",
     "goTo": "Mostra la jugada al vídeo",
     "setTime": "Assigna l’instant actual del vídeo a aquesta acció",
     "autoPause": "Pausa el vídeo mentre escric codis",
-    "autoPauseResume": "Reprèn després de"
+    "autoPauseResume": "Reprèn després de",
+    "syncAll": "Aplica-ho a tot el partit",
+    "syncFromHere": "Només des d’aquesta acció endavant (per corregir un tram, p. ex. a l’inici d’un set)",
+    "syncPick": "Serveis del set (marcador abans del servei):",
+    "syncAfter": "Comprova unes quantes accions al registre. Si a partir d’un moment el vídeo es desquadra (pauses, talls entre sets), posa el vídeo en aquella acció i prem ⇥ al registre: es torna a sincronitzar des d’allà.",
+    "syncFromRow": "Sincronitza des d’aquesta acció: aquesta i les següents s’ajusten a l’instant actual del vídeo"
   },
   "clips": {
     "title": "Vídeos filtrats",

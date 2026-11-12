@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState, type FormEvent, type RefObject } from 'react';
+import { useCallback, useEffect, useMemo, useState, type FormEvent, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal } from '../components/ui';
 import type { UseMatch } from '../matches/useMatch';
 import { eventCode } from '../engine/commands';
+import { applyEvent, initialState, type MatchEvent } from '../engine/match';
 import { formatTime, parseYouTubeId } from './youtube';
 import { VideoPlayer, type PlayerHandle, type VideoSource } from './VideoPlayer';
 import { clampDelay, type AutoPause } from './autoPause';
@@ -224,24 +225,46 @@ export function VideoPanel({ m, source, setSource, playerRef, autoPause, setAuto
   );
 }
 
-// Sincronització d'un partit codificat sense vídeo
+// Sincronització d'un partit codificat sense vídeo (en directe o importat de
+// DataVolley): es posa el vídeo a l'instant d'una acció i la resta es
+// col·loquen segons l'hora en què es van codificar. Es pot fer per trams.
 function SyncForm({ m, playerRef, onDone }: { m: UseMatch; playerRef: RefObject<PlayerHandle | null>; onDone: () => void }) {
   const { t } = useTranslation();
-  const [onlyMissing, setOnlyMissing] = useState(true);
+  const anyTimed = m.events.some((e) => e.videoTime != null);
+  const [fromHere, setFromHere] = useState(anyTimed);
+  const [onlyMissing, setOnlyMissing] = useState(!anyTimed);
   const [result, setResult] = useState<number | null>(null);
-  const candidates = m.events.filter((e) => e.type !== 'lineup').slice(0, 40);
+  const [set, setSet] = useState(1);
   const now = playerRef.current?.getTime() ?? null;
+
+  // Serveis de cada set amb el marcador d'aquell moment
+  const serves = useMemo(() => {
+    const out: { ev: MatchEvent; set: number; h: number; a: number }[] = [];
+    let st = initialState(m.state?.rules);
+    for (const ev of m.events) {
+      if (ev.type === 'action' && ev.skill === 'S') out.push({ ev, set: st.currentSet, h: st.score.H, a: st.score.A });
+      try {
+        st = applyEvent(st, ev);
+      } catch {
+        /* s'ignora */
+      }
+    }
+    return out;
+  }, [m.events, m.state?.rules]);
+  const sets = [...new Set(serves.map((x) => x.set))];
+  const list = serves.filter((x) => x.set === set);
 
   async function choose(seq: number) {
     const time = playerRef.current?.getTime();
     if (time == null) return;
-    setResult(await m.syncVideo(seq, time, onlyMissing));
+    setResult(await m.syncVideo(seq, time, onlyMissing, fromHere));
   }
 
   if (result !== null) {
     return (
       <div className="stack">
         <div className="notice">{t('video.synced', { count: result })}</div>
+        <p className="small muted">{t('video.syncAfter')}</p>
         <div className="row end">
           <button className="btn btn-primary" onClick={onDone}>
             {t('common.close')}
@@ -254,16 +277,38 @@ function SyncForm({ m, playerRef, onDone }: { m: UseMatch; playerRef: RefObject<
   return (
     <div className="stack">
       <p className="small">{t('video.syncHelp', { time: formatTime(now) })}</p>
-      <label className="check">
-        <input type="checkbox" checked={onlyMissing} onChange={(e) => setOnlyMissing(e.target.checked)} />
-        {t('video.syncOnlyMissing')}
-      </label>
+      <div className="stack-sm">
+        <label className="check">
+          <input type="radio" checked={!fromHere} onChange={() => setFromHere(false)} />
+          {t('video.syncAll')}
+        </label>
+        <label className="check">
+          <input type="radio" checked={fromHere} onChange={() => setFromHere(true)} />
+          {t('video.syncFromHere')}
+        </label>
+        <label className="check">
+          <input type="checkbox" checked={onlyMissing} onChange={(e) => setOnlyMissing(e.target.checked)} />
+          {t('video.syncOnlyMissing')}
+        </label>
+      </div>
+      {sets.length > 1 && (
+        <div className="segmented">
+          {sets.map((n) => (
+            <button key={n} className={set === n ? 'on' : ''} onClick={() => setSet(n)}>
+              {t('live.setN', { n })}
+            </button>
+          ))}
+        </div>
+      )}
+      <p className="small muted">{t('video.syncPick')}</p>
       <div className="pick-grid wide sync-list">
-        {candidates.map((e) => (
-          <button key={e.seq} className="pick" onClick={() => void choose(e.seq)}>
-            <span className="mono small muted">#{e.seq}</span>
-            <span className="mono">{eventCode(e)}</span>
-            <span className="small muted">{formatTime(e.videoTime)}</span>
+        {list.map(({ ev, h, a }) => (
+          <button key={ev.seq} className="pick" onClick={() => void choose(ev.seq)}>
+            <span className="mono small muted">
+              {h}-{a}
+            </span>
+            <span className="mono">{eventCode(ev)}</span>
+            <span className="small muted">{formatTime(ev.videoTime)}</span>
           </button>
         ))}
       </div>
