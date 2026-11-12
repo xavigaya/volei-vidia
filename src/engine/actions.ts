@@ -52,6 +52,10 @@ export interface Action {
   endZone?: number | null;
   start?: Point2 | null;
   end?: Point2 | null;
+  // Importacions: l'acció no decideix el punt (el marcador el porten les
+  // línies de punt del fitxer, p. ex. quan la codificació original no
+  // coincideix amb qui va guanyar la jugada)
+  noPoint?: boolean;
 }
 
 // Acció final: retorna l'equip que guanya el punt, o null si la jugada continua

@@ -138,6 +138,57 @@ describe('DataVolley', () => {
     expect(imp.warnings).toEqual([]);
   });
 
+  test('el marcador el donen les línies de punt (Click&Scout)', () => {
+    const rot = ';1;1;;;;1;2;3;4;5;6;11;12;13;14;15;16;';
+    const L = (code: string) => `${code};;;;;;;20.00.00;1${rot}`;
+    // Set 1: 25-23 per al local. Hi ha una jugada mal codificada (error d'atac
+    // del local però el punt és del local) i una línia de punt després de
+    // l'acció que tanca el set.
+    const scout: string[] = [];
+    let h = 0;
+    let a = 0;
+    const point = (side: 'H' | 'A') => {
+      if (side === 'H') h++;
+      else a++;
+      scout.push(L(`${side === 'H' ? '*' : 'a'}p${String(h).padStart(2, '0')}:${String(a).padStart(2, '0')}`));
+    };
+    // 1a jugada: error d'atac del local (A=) però el fitxer dona el punt al local
+    scout.push(L('*01SM+~~~16A'), L('a15RM-~~~16A'), L('a12AH+~~~41'), L('*$$BH-'), L('*04AH=~~~41'));
+    point('H');
+    while (h < 24 || a < 23) {
+      if (a < 23 && (h >= 24 || (h + a) % 2 === 0)) point('A');
+      else point('H');
+    }
+    // Punt final per un ace (l'acció ja dona el punt) i línia de punt redundant
+    scout.push(L('*02SM#~~~16A'));
+    scout.push(L('*p25:23'));
+    // Set 2: comença amb un punt directe
+    scout.push(`**1set;;;;;;;;1${rot}`);
+    scout.push(`a12SM+~~~16A;;;;;;;20.30.00;2${rot}`, `ap00:01;;;;;;;20.30.05;2${rot}`);
+    const text = [
+      '[3DATAVOLLEYSCOUT]',
+      '[3TEAMS]',
+      'AAA;Equip A;1;;;',
+      'BBB;Equip B;0;;;',
+      '[3SET]',
+      'True;8-5;16-11;21-16;25-23;29;',
+      'True;;;;;;',
+      '[3PLAYERS-H]',
+      ...[1, 2, 3, 4, 5, 6].map((n) => `0;${n};${n};${n};;;;;A${n};C${n};N${n};;;2;False;;;`),
+      '[3PLAYERS-V]',
+      ...[11, 12, 13, 14, 15, 16].map((n) => `1;${n};${n};${n - 10};;;;;B${n};C${n};N${n};;;2;False;;;`),
+      '[3SCOUT]',
+      ...scout,
+    ].join('\n');
+    const imp = dvwToEvents(parseDvw(text));
+    expect(imp.state.sets[0]).toMatchObject({ number: 1, home: 25, away: 23, winner: 'H' });
+    // La línia "*p25:23" no obre cap set nou: el set 2 comença 0-1
+    expect(imp.state.sets[1]).toMatchObject({ number: 2, home: 0, away: 1 });
+    // L'error d'atac que no va decidir el punt es conserva, sense punt
+    expect(imp.events.find((e) => e.type === 'action' && e.player === 4)).toMatchObject({ evaluation: '=', noPoint: true });
+    expect(imp.warnings).toEqual([]);
+  });
+
   test('codificació Latin-1', () => {
     const bytes = encodeLatin1('Col·locadora àèíòú ç');
     expect(decodeDvw(bytes.buffer as ArrayBuffer)).toBe('Col·locadora àèíòú ç');

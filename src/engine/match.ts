@@ -315,7 +315,7 @@ export function applyEvent(prev: MatchState, ev: MatchEventData): MatchState {
       const action: Action = { ...ev };
       delete (action as { type?: string }).type;
       s.rally.push(action);
-      const winner = pointWinner(ev);
+      const winner = ev.noPoint ? null : pointWinner(ev);
       if (winner) {
         awardPoint(s, winner);
         s.closing = { winner, side: ev.side, skill: ev.skill, evaluation: ev.evaluation };

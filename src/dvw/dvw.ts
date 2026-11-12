@@ -16,7 +16,7 @@
 // *P04>LUp / *z3>LUp (col·locador i rotació), **1set (final de set).
 // =====================================================================
 
-import type { Evaluation, Skill, SkillType } from '../engine/actions';
+import { pointWinner, type Evaluation, type Skill, type SkillType } from '../engine/actions';
 import {
   applyEvent,
   DEFAULT_RULES,
@@ -253,6 +253,21 @@ export function dvwToEvents(dv: ParsedDvw, baseRules: MatchRules = DEFAULT_RULES
     return 'H';
   };
 
+  // El marcador real el donen les línies de punt (*p25:20 / ap25:20): per a
+  // cada línia, quin equip guanya la jugada en curs (la següent línia de punt)
+  const rallyWinner: (Side | null)[] = new Array(dv.scout.length).fill(null);
+  {
+    let next: Side | null = null;
+    for (let i = dv.scout.length - 1; i >= 0; i--) {
+      const c = dv.scout[i].code;
+      if (/^\*\*\d/.test(c)) next = null;
+      else if (/^[*a]p\d{1,2}:\d{1,2}/i.test(c)) next = c[0] === '*' ? 'H' : 'A';
+      rallyWinner[i] = next;
+    }
+  }
+  const hasPointLines = dv.scout.some((l) => /^[*a]p\d{1,2}:\d{1,2}/i.test(l.code));
+  let rallyPointGiven = false;
+
   dv.scout.forEach((line, idx) => {
     const code = line.code;
     if (!code) return;
@@ -266,6 +281,11 @@ export function dvwToEvents(dv: ParsedDvw, baseRules: MatchRules = DEFAULT_RULES
 
     const isPlayLine = SKILL_RE.test(code) || /^[*a]p\d/i.test(code) || /^[*a]c\d/i.test(code) || /^[*a]T$/.test(code);
     if (!isPlayLine) return;
+
+    // Línia de punt amb el set ja acabat (p. ex. "ap17:25" després de l'acció
+    // que el tanca): no obre un set nou. Només ho fa el primer punt (1:0 / 0:1).
+    const pl = /^[*a]p(\d{1,2}):(\d{1,2})/i.exec(code);
+    if (pl && state.phase !== 'in_play' && Number(pl[1]) + Number(pl[2]) !== 1) return;
 
     // Inici de set: alineació a partir de la rotació de la primera línia
     if (state.phase === 'awaiting_lineup') {
@@ -285,20 +305,30 @@ export function dvwToEvents(dv: ParsedDvw, baseRules: MatchRules = DEFAULT_RULES
       const rest = m[6] ?? '';
       const zone = (c: string | undefined) => (c && /[1-9]/.test(c) ? Number(c) : null);
       const type = (m[4] ?? '').toUpperCase();
+      const action = {
+        side,
+        player: Number(m[2]),
+        skill: m[3].toUpperCase() as Skill,
+        evaluation: m[5] as Evaluation,
+      };
+      // Amb línies de punt, una acció només dona el punt si coincideix amb qui
+      // el guanya de veritat i encara no s'ha donat en aquesta jugada
+      const pw = pointWinner(action);
+      const noPoint = hasPointLines && pw != null && (pw !== rallyWinner[idx] || rallyPointGiven);
+      const before = state.score.H + state.score.A;
       push(
         {
           type: 'action',
-          side,
-          player: Number(m[2]),
-          skill: m[3].toUpperCase() as Skill,
+          ...action,
           skillType: /^[HMQTUFO]$/.test(type) ? (type as SkillType) : null,
-          evaluation: m[5] as Evaluation,
           startZone: zone(rest[3]),
           endZone: zone(rest[4]),
+          ...(noPoint ? { noPoint: true } : {}),
         },
         line.videoTime,
         code,
       );
+      if (state.score.H + state.score.A !== before) rallyPointGiven = true;
       return;
     }
     let mm = /^[*a]p(\d{1,2}):(\d{1,2})/i.exec(code);
@@ -306,6 +336,10 @@ export function dvwToEvents(dv: ParsedDvw, baseRules: MatchRules = DEFAULT_RULES
       // El punt ja s'ha comptat si l'acció final el donava; si no, s'afegeix
       const target = { H: Number(mm[1]), A: Number(mm[2]) };
       if (state.score[side] < target[side]) push({ type: 'point', side }, line.videoTime, code);
+      rallyPointGiven = false;
+      if (state.phase === 'in_play' && (state.score.H !== target.H || state.score.A !== target.A)) {
+        warnings.push(`${code}: marcador ${state.score.H}-${state.score.A}`);
+      }
       return;
     }
     mm = /^[*a]c(\d{1,2}):(\d{1,2})/i.exec(code);
