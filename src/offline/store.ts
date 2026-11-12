@@ -70,6 +70,34 @@ export async function kvSet<T>(key: string, value: T): Promise<void> {
   });
 }
 
+// Esborra totes les dades desades al dispositiu (còpies sense connexió i cua
+// de canvis). Es fa en tancar la sessió perquè la persona que faci servir el
+// mateix dispositiu després no pugui llegir dades del club (hi ha menors).
+// Les preferències de la interfície i l'adreça del servidor es mantenen.
+export async function kvClear(): Promise<void> {
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && (k.startsWith(LS_PREFIX) || k.startsWith('svidia.flip.') || k === 'svidia.club')) localStorage.removeItem(k);
+    }
+  } catch {
+    /* sense emmagatzematge */
+  }
+  const db = await openDb();
+  if (!db) return;
+  await new Promise<void>((resolve) => {
+    try {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+      tx.onabort = () => resolve();
+    } catch {
+      resolve();
+    }
+  });
+}
+
 // Error de xarxa (no hi ha connexió o el servidor no respon)
 export function isNetworkError(err: { message?: string; code?: string } | null | undefined): boolean {
   if (!err) return false;

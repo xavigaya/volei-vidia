@@ -1,0 +1,14 @@
+# Avisa (amb una PR) quan hi ha versions noves de les dependències i de les
+# accions de GitHub. Com que les accions estan fixades per hash, així es
+# mantenen al dia sense haver-ho de fer a mà.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5

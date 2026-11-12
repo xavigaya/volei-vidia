@@ -43,7 +43,8 @@
     "haveAccount": "¿Ya tienes cuenta? Inicia sesión",
     "noAccount": "¿No tienes cuenta? Crea una",
     "checkEmail": "Te hemos enviado un correo para confirmar la cuenta. Abre el enlace y vuelve aquí.",
-    "passwordHint": "Mínimo 8 caracteres"
+    "passwordHint": "Mínimo 8 caracteres",
+    "signOutPending": "Hay {{count}} cambios que todavía no se han enviado al servidor (no hay conexión). Si cierras la sesión se perderán, porque se borran los datos guardados en este dispositivo. ¿Quieres cerrarla igualmente?"
   },
   "nav": {
     "home": "Inicio",
@@ -83,7 +84,8 @@
     "deleteClub": "Eliminar el club y todos sus datos",
     "deleteClubConfirm": "Escribe el nombre del club para confirmarlo:",
     "noClubsSuper": "Todavía no hay ningún club. Crea uno.",
-    "noClubsInvite": "Todavía no formas parte de ningún club. Pide al administrador de tu club (o de la plataforma) que te invite con este correo."
+    "noClubsInvite": "Todavía no formas parte de ningún club. Pide al administrador de tu club (o de la plataforma) que te invite con este correo.",
+    "logoInvalid": "El logotipo debe ser PNG, JPEG o WebP y de 1 MB como máximo."
   },
   "home": {
     "welcome": "Bienvenido/a a {{club}}",
