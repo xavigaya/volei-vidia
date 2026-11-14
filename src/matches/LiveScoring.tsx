@@ -120,6 +120,13 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
       playerRef.current?.pause();
     }
   }, [active]);
+  // Un codi amb error atura el vídeo per poder-lo corregir (i anul·la la represa automàtica)
+  const pauseForError = () => {
+    if (resumeTimer.current) window.clearTimeout(resumeTimer.current);
+    resumeTimer.current = null;
+    autoPaused.current = false;
+    if (source) playerRef.current?.pause();
+  };
   const seekTo = (time: number | null | undefined) => {
     if (time == null || !playerRef.current) return;
     playerRef.current.seek(time - 3);
@@ -155,6 +162,7 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
       const r = await m.append(ev, videoTime());
       if (!r.ok) {
         setMessage({ kind: 'error', text: engineErrorText(t, r.error) });
+        pauseForError();
         return false;
       }
       const infos: string[] = [];
@@ -204,7 +212,10 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
     const input = suggestedCode && EVAL_ONLY.test(command.trim()) ? suggestedCode + command.trim() : command;
     const r = parseCommand(input);
     if (!r.ok) {
-      if (r.error !== 'empty') setMessage({ kind: 'error', text: `${t(`live.cmd.${r.error}`)} (${r.token})` });
+      if (r.error !== 'empty') {
+        setMessage({ kind: 'error', text: `${t(`live.cmd.${r.error}`)} (${r.token})` });
+        pauseForError();
+      }
       return;
     }
     for (const ev of r.events) {
@@ -311,7 +322,7 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
         </div>
       </section>
 
-      {message && (
+      {message && (message.kind !== 'error' || !canCode) && (
         <div className={message.kind === 'error' ? 'error-box' : 'notice'} role="status">
           {message.text}
         </div>
@@ -418,6 +429,11 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
 
       {canCode && (
         <section className="command-bar card">
+          {message?.kind === 'error' && (
+            <div className="error-box cmd-error" role="alert">
+              {message.text}
+            </div>
+          )}
           <form onSubmit={onCommand} className="row">
             <input
               ref={cmdRef}

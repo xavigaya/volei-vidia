@@ -116,6 +116,11 @@ Per fer-ho servir en un pavelló sense cobertura: obre el partit abans de sortir
 - Teclat: amb la línia buida, escriu només la qualificació (`+`, `#16`…) i Retorn, o Tab per omplir el codi proposat. Tauleta: un toc a la proposta tria jugador i fonament.
 - Es poden desactivar amb la casella *Suggeriments*.
 
+**Reconeixement de jugades — Etapa 1.1**
+
+- **Calibració del vídeo** (pestanya *Anàlisi assistida*, migració `0016_video_calibrations.sql`): sobre un fotograma del vídeo original (o una captura) es marquen les 4 cantonades, la cinta superior de la xarxa i les antenes. Es calcula l'homografia de la pista i el model de la càmera, es dibuixa la pista projectada per comprovar-ho i es mostra l'error de cada punt. També l'alçada de la xarxa, l'equip al costat de la càmera a cada set i calibracions per trams. Exportació en JSON per a l'eina d'anàlisi local.
+- Codificació: si un codi dona error, el vídeo s'atura i l'error apareix just a sobre de la línia d'ordres.
+
 ## Tecnologia
 
 - React + TypeScript + Vite (una sola base de codi per a totes les plataformes).

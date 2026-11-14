@@ -793,3 +793,40 @@ input.search { max-width: 260px; }
 .acta-hint.acta-diverged { border-left-color: var(--warn); }
 .btn-point.acta-expected { box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 55%, transparent); }
 .ap-eval.acta-against { opacity: 0.55; border-style: dashed; }
+.cmd-error { margin-bottom: 8px; }
+/* Calibració del vídeo (etapa 1.1) */
+.cal-toolbar { gap: 8px; }
+.cal-seek { gap: 10px; }
+.cal-seek input[type='range'] { flex: 1 1 320px; width: auto; }
+.cal-inline input { width: 120px; }
+.cal-editor { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .cal-editor { grid-template-columns: 1fr; } }
+.cal-frame { overflow: auto; max-height: 78vh; border: 1px solid var(--line); border-radius: 8px; background: #20252c; outline: none; }
+.cal-frame:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 50%, transparent); }
+.cal-stage { position: relative; min-width: 100%; }
+.cal-canvas, .cal-overlay { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.cal-overlay { touch-action: none; }
+.cal-overlay.editable { cursor: crosshair; }
+.cal-overlay line { vector-effect: non-scaling-stroke; }
+.cal-line, .cal-center { stroke: #33d17a; stroke-width: 2px !important; }
+.cal-center { stroke-dasharray: 8 6; }
+.cal-attack { stroke: #33d17a; stroke-width: 1.5px !important; opacity: 0.8; }
+.cal-grid { stroke: #33d17a; stroke-width: 1px !important; opacity: 0.45; stroke-dasharray: 4 6; }
+.cal-net { stroke: #ffd43b; stroke-width: 2.5px !important; }
+.cal-net-low { stroke: #ffd43b; stroke-width: 1px !important; opacity: 0.6; stroke-dasharray: 4 4; }
+.cal-antenna { stroke: #ff6b6b; stroke-width: 2.5px !important; }
+.cal-point { cursor: grab; }
+.cal-point circle { fill: rgba(255, 255, 255, 0.15); stroke: #fff; }
+.cal-point line { stroke: #fff; vector-effect: non-scaling-stroke; stroke-width: 1px !important; }
+.cal-point text { fill: #fff; font-weight: 800; paint-order: stroke; stroke: #000; stroke-width: 3px; vector-effect: non-scaling-stroke; }
+.cal-point.active circle { stroke: var(--accent); fill: color-mix(in srgb, var(--accent) 30%, transparent); }
+.cal-point.bad circle { stroke: #ff4d4f; }
+.cal-steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.cal-step { width: 100%; text-align: left; font: inherit; font-size: 0.9rem; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); cursor: pointer; }
+.cal-step.on { border-color: var(--brand); box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 30%, transparent); }
+.cal-step.done { background: color-mix(in srgb, var(--ok) 8%, var(--surface)); }
+.cal-sets { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.cal-sets select { width: auto; }
+.cal-saved { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.cal-video { position: absolute; width: 2px; height: 2px; opacity: 0; pointer-events: none; }
+.cal-panel .grid-2 { align-items: start; }

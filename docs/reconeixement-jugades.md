@@ -1,6 +1,6 @@
 # Reconeixement de jugades a partir del vídeo — Document de disseny
 
-> Branca: `reconeixement-jugades` · Estat: **etapes 0.1 i 0.2 fetes** (sistemes de joc, recepció, verificació amb l'acta i suggeriments) · Data: novembre 2026
+> Branca: `reconeixement-jugades` · Estat: **etapes 0.1, 0.2 i 1.1 fetes** (sistemes de joc, recepció, acta, suggeriments i calibració del vídeo) · Data: novembre 2026
 
 ## 1. Objectiu
 
@@ -62,6 +62,17 @@ Del sistema de joc se'n dedueix, per a cada rotació:
 4. Quin equip juga al costat de la càmera al primer set. Els sets següents es dedueixen (canvi de camp a cada set i, al set decisiu, a 8 punts), però es poden corregir.
 
 Les cantonades es marquen en un ordre fix relatiu a la càmera (cantonada esquerra propera, dreta propera, dreta llunyana, esquerra llunyana), de manera que la transformació és correcta tant si es grava des d'un fons com des de l'altre.
+
+**Implementació (etapa 1.1, apartat *Calibració del vídeo* de la pestanya *Anàlisi assistida*):**
+
+- S'obre el fitxer de vídeo original (es tria el fotograma amb un control lliscant) o una captura d'un fotograma. Un vídeo de YouTube no es pot capturar. El fitxer no es puja.
+- Es marquen 8 punts en ordre: les 4 cantonades (esquerra i dreta vistes des de la càmera, primer les properes), els dos extrems de la cinta superior de la xarxa sobre les línies laterals i la punta de les dues antenes (80 cm per sobre de la xarxa). Es poden arrossegar, moure amb les fletxes (1 px; Maj = 5 px) i ampliar.
+- Amb les cantonades es calcula l'homografia del terra; amb 6 o més punts, inclosos els de la xarxa o les antenes, el model complet de la càmera (matriu 3×4, mètode DLT), que permet calcular l'alçada de la pilota. La pista, la xarxa i les antenes projectades es dibuixen a sobre del fotograma per comprovar-ho, i es mostra l'error de reprojecció de cada punt i el mitjà (bo < 4 px, acceptable < 10 px, en 1080p).
+- Alçada de la xarxa: masculina 2,43 m, femenina 2,24 m o una altra.
+- Equip al costat de la càmera: s'indica el del set 1 i la resta es proposen alternant (es poden corregir; el set decisiu es sorteja).
+- Calibracions per trams: cadascuna és vàlida a partir d'un instant del vídeo (si la càmera es mou, se n'afegeix una de nova).
+- Es desa a `video_calibrations` (migració `0016_video_calibrations.sql`) i s'exporta en JSON (`volei-vidia/calibration`, amb l'homografia i la matriu de càmera calculades) per a l'eina local.
+- Coordenades: la calibració treballa en coordenades de càmera (u, v, z) i `cameraToApp` les converteix a les de l'app (x 0..18 amb el local a l'esquerra) segons l'equip que és al costat de la càmera a cada set (`src/recognition/calibration.ts`).
 
 Amb els punts 1, s'obté la transformació de la imatge a metres del camp (homografia), compatible amb el sistema de coordenades actual (`Point2`: 18 × 9 m, xarxa a x = 9). Amb els punts 2 i 3, s'obté una referència d'alçada: permet saber quan la pilota creua la xarxa, distingir atac / free ball / pilota per baix, i detectar blocs.
 
@@ -348,7 +359,7 @@ Tots dos en JSON amb número de versió del format.
 |---|---|---|
 | 0.1 ✅ | Sistemes de joc, plantilles de recepció i verificació amb l'acta (pestanya *Anàlisi assistida*) | Dades del §3 introduïbles i desades |
 | 0.2 ✅ | Suggeriments per lògica de joc | Codificació manual més ràpida |
-| 1.1 | Eina de calibració de pista i xarxa | Homografia i alçada de xarxa per vídeo |
+| 1.1 ✅ | Eina de calibració de pista i xarxa | Homografia i alçada de xarxa per vídeo |
 | 1.2 | `vidia-vision`: detecció de jugadors, pilota i àudio | Contactes i jugades detectats |
 | 1.3 | Reajust automàtic dels temps del partit ja codificat | Primeres dades d'entrenament precises |
 | 1.4 | Assignació de jugadors i cua de revisió | Primer partit analitzat de punta a punta |

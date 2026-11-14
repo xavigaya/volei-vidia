@@ -813,7 +813,8 @@
     "sections": {
       "systems": "Sistema de joc",
       "reception": "Recepció",
-      "sheet": "Verificació amb l'acta"
+      "sheet": "Verificació amb l'acta",
+      "calibration": "Calibració del vídeo"
     },
     "systemNames": {
       "51": "5-1 (S-OH-MB-OPP)",
@@ -970,6 +971,52 @@
       "diverged": "La codificació del set {{set}} no coincideix amb l'acta des del punt {{n}} ({{score}}), que segons l'acta guanya {{winner}}. Revisa-ho a Anàlisi assistida → Verificació amb l'acta.",
       "expectedPoint": "Segons l'acta, aquest punt el guanya aquest equip.",
       "againstActa": "Segons l'acta, aquest punt el guanya {{team}}."
+    },
+    "calib": {
+      "section": "Calibració del vídeo",
+      "help": "Obre el vídeo original del partit (o una captura d'un fotograma), tria un moment amb la pista ben visible i marca els 8 punts en ordre. La pista projectada (en verd) ha de coincidir amb les línies reals. El vídeo no es puja: només es desen els punts.",
+      "openFile": "Obre el vídeo o una imatge",
+      "changeFile": "Canvia el fitxer",
+      "localHint": "Vídeo d'aquest partit: {{name}}",
+      "unsupported": "Format no admès: tria un vídeo o una imatge.",
+      "noFrame": "Sense fotograma. Amb un vídeo de YouTube no es pot capturar el fotograma: obre el fitxer original o una captura de pantalla.",
+      "frameTime": "Moment del vídeo",
+      "frameLabel": "Fotograma per calibrar",
+      "fromTime": "Vàlida a partir del segon",
+      "fromTimeHelp": "La calibració es desa a partir d'aquest moment del vídeo.",
+      "points": {
+        "nl": "Cantonada esquerra propera",
+        "nr": "Cantonada dreta propera",
+        "fr": "Cantonada dreta llunyana",
+        "fl": "Cantonada esquerra llunyana",
+        "netL": "Xarxa: cinta superior, extrem esquerre (sobre la línia lateral)",
+        "netR": "Xarxa: cinta superior, extrem dret (sobre la línia lateral)",
+        "antL": "Antena esquerra: punta superior",
+        "antR": "Antena dreta: punta superior"
+      },
+      "clearPoint": "Esborra aquest punt",
+      "needCorners": "Marca primer les 4 cantonades (esquerra i dreta vistes des de la càmera).",
+      "groundOnly": "Pista calibrada. Marca la xarxa i les antenes per poder calcular l'alçada de la pilota.",
+      "quality": {
+        "good": "Calibració bona (error mitjà {{rmse}} px).",
+        "fair": "Calibració acceptable (error mitjà {{rmse}} px). Pots ampliar i afinar els punts.",
+        "poor": "Calibració dolenta (error mitjà {{rmse}} px): revisa els punts marcats en vermell."
+      },
+      "editHelp": "Clica per col·locar el punt actiu (es passa al següent). Arrossega'l per corregir-lo. Amb el teclat, les fletxes el mouen 1 píxel (Maj = 5).",
+      "net": "Alçada de la xarxa",
+      "netM": "Masculina (2,43 m)",
+      "netF": "Femenina (2,24 m)",
+      "netOther": "Altra",
+      "sides": "Equip al costat de la càmera",
+      "firstSet": "Set 1:",
+      "sidesHelp": "Es canvia de camp a cada set. Al set decisiu el camp es sorteja i es canvia als 8 punts: revisa'l si cal.",
+      "saveFrom": "Desa la calibració (des de {{time}})",
+      "saved": "Calibració desada (vàlida des de {{time}}).",
+      "missingMigration": "Per desar la calibració cal executar la migració supabase/migrations/0016_video_calibrations.sql.",
+      "confirmDelete": "Vols eliminar la calibració que comença a {{time}}?",
+      "savedList": "Calibracions desades",
+      "fromLabel": "Des de {{time}}",
+      "segmentsHelp": "Si la càmera es mou durant el partit, afegeix una calibració nova a partir d'aquell moment."
     }
   }
 }

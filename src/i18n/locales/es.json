@@ -813,7 +813,8 @@
     "sections": {
       "systems": "Sistema de juego",
       "reception": "Recepción",
-      "sheet": "Verificación con el acta"
+      "sheet": "Verificación con el acta",
+      "calibration": "Calibración del vídeo"
     },
     "systemNames": {
       "51": "5-1 (S-OH-MB-OPP)",
@@ -970,6 +971,52 @@
       "diverged": "La codificación del set {{set}} no coincide con el acta desde el punto {{n}} ({{score}}), que según el acta gana {{winner}}. Revísalo en Análisis asistido → Verificación con el acta.",
       "expectedPoint": "Según el acta, este punto lo gana este equipo.",
       "againstActa": "Según el acta, este punto lo gana {{team}}."
+    },
+    "calib": {
+      "section": "Calibración del vídeo",
+      "help": "Abre el vídeo original del partido (o una captura de un fotograma), elige un momento con la pista bien visible y marca los 8 puntos en orden. La pista proyectada (en verde) debe coincidir con las líneas reales. El vídeo no se sube: solo se guardan los puntos.",
+      "openFile": "Abre el vídeo o una imagen",
+      "changeFile": "Cambia el archivo",
+      "localHint": "Vídeo de este partido: {{name}}",
+      "unsupported": "Formato no admitido: elige un vídeo o una imagen.",
+      "noFrame": "Sin fotograma. Con un vídeo de YouTube no se puede capturar el fotograma: abre el archivo original o una captura de pantalla.",
+      "frameTime": "Momento del vídeo",
+      "frameLabel": "Fotograma para calibrar",
+      "fromTime": "Válida a partir del segundo",
+      "fromTimeHelp": "La calibración se guarda a partir de este momento del vídeo.",
+      "points": {
+        "nl": "Esquina izquierda cercana",
+        "nr": "Esquina derecha cercana",
+        "fr": "Esquina derecha lejana",
+        "fl": "Esquina izquierda lejana",
+        "netL": "Red: cinta superior, extremo izquierdo (sobre la línea lateral)",
+        "netR": "Red: cinta superior, extremo derecho (sobre la línea lateral)",
+        "antL": "Antena izquierda: punta superior",
+        "antR": "Antena derecha: punta superior"
+      },
+      "clearPoint": "Borra este punto",
+      "needCorners": "Marca primero las 4 esquinas (izquierda y derecha vistas desde la cámara).",
+      "groundOnly": "Pista calibrada. Marca la red y las antenas para poder calcular la altura del balón.",
+      "quality": {
+        "good": "Calibración buena (error medio {{rmse}} px).",
+        "fair": "Calibración aceptable (error medio {{rmse}} px). Puedes ampliar y afinar los puntos.",
+        "poor": "Calibración mala (error medio {{rmse}} px): revisa los puntos marcados en rojo."
+      },
+      "editHelp": "Haz clic para colocar el punto activo (se pasa al siguiente). Arrástralo para corregirlo. Con el teclado, las flechas lo mueven 1 píxel (Mayús = 5).",
+      "net": "Altura de la red",
+      "netM": "Masculina (2,43 m)",
+      "netF": "Femenina (2,24 m)",
+      "netOther": "Otra",
+      "sides": "Equipo en el lado de la cámara",
+      "firstSet": "Set 1:",
+      "sidesHelp": "Se cambia de campo en cada set. En el set decisivo el campo se sortea y se cambia a los 8 puntos: revísalo si hace falta.",
+      "saveFrom": "Guarda la calibración (desde {{time}})",
+      "saved": "Calibración guardada (válida desde {{time}}).",
+      "missingMigration": "Para guardar la calibración hay que ejecutar la migración supabase/migrations/0016_video_calibrations.sql.",
+      "confirmDelete": "¿Quieres eliminar la calibración que empieza en {{time}}?",
+      "savedList": "Calibraciones guardadas",
+      "fromLabel": "Desde {{time}}",
+      "segmentsHelp": "Si la cámara se mueve durante el partido, añade una calibración nueva a partir de ese momento."
     }
   }
 }

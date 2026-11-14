@@ -813,7 +813,8 @@
     "sections": {
       "systems": "Game system",
       "reception": "Reception",
-      "sheet": "Scoresheet check"
+      "sheet": "Scoresheet check",
+      "calibration": "Video calibration"
     },
     "systemNames": {
       "51": "5-1 (S-OH-MB-OPP)",
@@ -970,6 +971,52 @@
       "diverged": "Set {{set}} coding diverges from the scoresheet from rally {{n}} ({{score}}), which the scoresheet gives to {{winner}}. Check it in Assisted analysis → Scoresheet check.",
       "expectedPoint": "According to the scoresheet, this team wins this rally.",
       "againstActa": "According to the scoresheet, {{team}} wins this rally."
+    },
+    "calib": {
+      "section": "Video calibration",
+      "help": "Open the match's original video (or a frame screenshot), pick a moment with the court clearly visible and mark the 8 points in order. The projected court (green) must match the real lines. The video is not uploaded: only the points are saved.",
+      "openFile": "Open video or image",
+      "changeFile": "Change file",
+      "localHint": "This match's video: {{name}}",
+      "unsupported": "Unsupported format: choose a video or an image.",
+      "noFrame": "No frame. A YouTube video's frame cannot be captured: open the original file or a screenshot.",
+      "frameTime": "Video time",
+      "frameLabel": "Frame to calibrate",
+      "fromTime": "Valid from second",
+      "fromTimeHelp": "The calibration is saved from this moment of the video.",
+      "points": {
+        "nl": "Near left corner",
+        "nr": "Near right corner",
+        "fr": "Far right corner",
+        "fl": "Far left corner",
+        "netL": "Net: top band, left end (above the sideline)",
+        "netR": "Net: top band, right end (above the sideline)",
+        "antL": "Left antenna: top",
+        "antR": "Right antenna: top"
+      },
+      "clearPoint": "Clear this point",
+      "needCorners": "First mark the 4 corners (left and right as seen from the camera).",
+      "groundOnly": "Court calibrated. Mark the net and antennas to compute ball height.",
+      "quality": {
+        "good": "Good calibration (mean error {{rmse}} px).",
+        "fair": "Acceptable calibration (mean error {{rmse}} px). You can zoom in and refine the points.",
+        "poor": "Poor calibration (mean error {{rmse}} px): check the points marked in red."
+      },
+      "editHelp": "Click to place the active point (moves to the next). Drag it to correct it. With the keyboard, arrows move it 1 pixel (Shift = 5).",
+      "net": "Net height",
+      "netM": "Men (2.43 m)",
+      "netF": "Women (2.24 m)",
+      "netOther": "Other",
+      "sides": "Team on the camera side",
+      "firstSet": "Set 1:",
+      "sidesHelp": "Teams change sides every set. In the deciding set sides are drawn and change at 8 points: check it if needed.",
+      "saveFrom": "Save calibration (from {{time}})",
+      "saved": "Calibration saved (valid from {{time}}).",
+      "missingMigration": "To save the calibration, run the migration supabase/migrations/0016_video_calibrations.sql.",
+      "confirmDelete": "Delete the calibration starting at {{time}}?",
+      "savedList": "Saved calibrations",
+      "fromLabel": "From {{time}}",
+      "segmentsHelp": "If the camera moves during the match, add a new calibration from that moment."
     }
   }
 }
