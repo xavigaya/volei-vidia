@@ -121,6 +121,11 @@ Per fer-ho servir en un pavelló sense cobertura: obre el partit abans de sortir
 - **Calibració del vídeo** (pestanya *Anàlisi assistida*, migració `0016_video_calibrations.sql`): sobre un fotograma del vídeo original (o una captura) es marquen les 4 cantonades, la cinta superior de la xarxa i les antenes. Es calcula l'homografia de la pista i el model de la càmera, es dibuixa la pista projectada per comprovar-ho i es mostra l'error de cada punt. També l'alçada de la xarxa, l'equip al costat de la càmera a cada set i calibracions per trams. Exportació en JSON per a l'eina d'anàlisi local.
 - Codificació: si un codi dona error, el vídeo s'atura i l'error apareix just a sobre de la línia d'ordres.
 
+**Reconeixement de jugades — Etapa 1.2**
+
+- **Eina local `vidia-vision`** (carpeta `vision/`, instruccions a `vision/README.md`): analitza el vídeo original a l'ordinador del club (Windows 11, GPU NVIDIA) i detecta cops i xiulets, la pilota, els jugadors a la pista, els contactes i les jugades (amb el servidor i el guanyador de l'acta). S'instal·la amb `install.ps1`.
+- A *Anàlisi assistida*, **Exporta el paquet d'anàlisi**: el fitxer que necessita l'eina (sense vídeo ni noms de jugadors).
+
 ## Tecnologia
 
 - React + TypeScript + Vite (una sola base de codi per a totes les plataformes).
@@ -213,5 +218,6 @@ src/offline/           Còpia local, cua de canvis pendents i sincronització
 src-tauri/             Aplicació d'escriptori (Tauri)
 assets/                Icones i pantalla d'inici d'Android
 src/i18n/              Traduccions (ca.json és la referència)
-src/recognition/       Anàlisi assistida: sistemes de joc, recepció i verificació amb l'acta
+src/recognition/       Anàlisi assistida: sistemes de joc, recepció, acta, suggeriments i calibració
+vision/                Eina local d'anàlisi de vídeo (Python): vidia-vision
 ```

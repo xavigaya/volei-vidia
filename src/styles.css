@@ -830,3 +830,4 @@ input.search { max-width: 260px; }
 .cal-saved { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .cal-video { position: absolute; width: 2px; height: 2px; opacity: 0; pointer-events: none; }
 .cal-panel .grid-2 { align-items: start; }
+.rec-package { gap: 10px; align-items: center; }

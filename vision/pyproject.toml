@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vidia-vision"
+version = "0.1.0"
+description = "Volei VidIA — eina local d'anàlisi de vídeo (detecció de jugadors, pilota, cops i jugades)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Ús intern del club" }
+# Només dependències amb llicència permissiva (BSD, Apache-2.0, MIT)
+dependencies = [
+  "numpy>=1.26",
+  "scipy>=1.11",
+  "opencv-python-headless>=4.9",
+  "av>=12",
+]
+
+[project.optional-dependencies]
+# PyTorch s'instal·la a part amb el suport de CUDA (vegeu install.ps1)
+gpu = ["torch>=2.4", "torchvision>=0.19"]
+dev = ["pytest>=8"]
+
+[project.scripts]
+vidia-vision = "vidia_vision.cli:main"
+
+[tool.setuptools]
+packages = ["vidia_vision"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

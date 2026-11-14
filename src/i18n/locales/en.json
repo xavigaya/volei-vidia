@@ -1017,6 +1017,12 @@
       "savedList": "Saved calibrations",
       "fromLabel": "From {{time}}",
       "segmentsHelp": "If the camera moves during the match, add a new calibration from that moment."
+    },
+    "package": {
+      "export": "Export analysis package",
+      "help": "File for the local video analysis tool (vidia-vision): calibration, lineups, roster, systems, scoresheet and actions with their time. It does not include the video or player names.",
+      "done": "Package exported. Analyse it with: vidia-vision.cmd analyze package.json --video match.mp4",
+      "noCalibration": "Package exported, but without calibration: calibrate the video before analysing it."
     }
   }
 }

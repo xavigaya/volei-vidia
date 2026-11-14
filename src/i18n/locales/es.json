@@ -1017,6 +1017,12 @@
       "savedList": "Calibraciones guardadas",
       "fromLabel": "Desde {{time}}",
       "segmentsHelp": "Si la cámara se mueve durante el partido, añade una calibración nueva a partir de ese momento."
+    },
+    "package": {
+      "export": "Exporta el paquete de análisis",
+      "help": "Archivo para la herramienta local de análisis de vídeo (vidia-vision): calibración, formaciones, convocatoria, sistemas, acta y acciones con su tiempo. No incluye el vídeo ni los nombres de los jugadores.",
+      "done": "Paquete exportado. Analízalo con: vidia-vision.cmd analyze paquete.json --video partido.mp4",
+      "noCalibration": "Paquete exportado, pero sin calibración: calibra el vídeo antes de analizarlo."
     }
   }
 }

@@ -1,6 +1,6 @@
 # Reconeixement de jugades a partir del vídeo — Document de disseny
 
-> Branca: `reconeixement-jugades` · Estat: **etapes 0.1, 0.2 i 1.1 fetes** (sistemes de joc, recepció, acta, suggeriments i calibració del vídeo) · Data: novembre 2026
+> Branca: `reconeixement-jugades` · Estat: **etapes 0.1, 0.2, 1.1 i 1.2 fetes** (sistemes de joc, recepció, acta, suggeriments, calibració i eina local d'anàlisi) · Data: novembre 2026
 
 ## 1. Objectiu
 
@@ -218,7 +218,7 @@ Criteri d'èxit: reduir de manera apreciable el nombre de tecles per acció en u
 
 ## 6. Fase 1 — Detecció de contactes i trajectòries (models preentrenats)
 
-Primera versió de l'eina local `vidia-vision`. No necessita entrenament propi, però sí calibració (§3.1c).
+Primera versió de l'eina local `vidia-vision`. No necessita entrenament propi, però sí calibració (§3.1c). La importació dels resultats a l'app i la cua de revisió són l'etapa 1.4.
 
 ### 6.1 Processament
 
@@ -246,6 +246,20 @@ Això converteix els partits ja codificats en dades d'entrenament precises sense
 2. **Durant la jugada**: el seguiment manté la identitat de cada jugador.
 3. **A cada contacte**: es proposa el jugador més proper a la pilota, ponderat per la lògica de joc (el segon toc normalment el fa el col·locador, etc.).
 4. Si hi ha dubte (dos jugadors a prop, seguiment perdut), la proposta es marca amb confiança baixa.
+
+### 6.4 bis Implementació (etapa 1.2)
+
+L'eina és a la carpeta `vision/` del repositori (instal·lació i ús a `vision/README.md`):
+
+- **Instal·lació a Windows 11**: `install.ps1` crea un entorn Python propi, instal·la PyTorch amb CUDA 12.8 (o 12.6) i comprova la GPU. S'executa amb `vidia-vision.cmd`.
+- **Entrada**: el paquet d'anàlisi exportat des de l'app (*Anàlisi assistida → Exporta el paquet d'anàlisi*) i el fitxer de vídeo original. També accepta només l'exportació de la calibració.
+- **Àudio**: cops per flux espectral (0,8–6 kHz) amb llindar adaptatiu; xiulets per to sostingut (2–4,5 kHz).
+- **Pilota**: diferència de tres fotogrames, taques de la mida esperada segons la calibració, trajectòries amb predicció de velocitat.
+- **Jugadors**: Faster R-CNN de torchvision (pesos COCO) a 5 fps, filtre de pista amb la calibració (fora banquetes i àrbitres) i seguiment amb l'algorisme hongarès.
+- **Contactes**: trencament de la trajectòria (falla l'ajust parabòlic local i canvia la direcció), confirmat pel so; un trencament sense so només compta si és fort.
+- **Jugades**: xiulet + contactes; amb l'acta, s'ajusten al nombre de punts de cada set i reben servidor (equip i dorsal) i guanyador.
+- **Sortida**: `volei-vidia/vision-detections` (cops, xiulets, pilota, jugadors, contactes, jugades i quadre de punts trobats per set) i, opcionalment, un vídeo de revisió amb les deteccions dibuixades.
+- **Proves**: un vídeo sintètic amb pista, pilota, cops i xiulets, amb resultat conegut (es detecten tots els contactes reals de les tres jugades i com a molt un fals positiu per jugada).
 
 ### 6.5 Sortida de la fase 1
 
@@ -360,7 +374,7 @@ Tots dos en JSON amb número de versió del format.
 | 0.1 ✅ | Sistemes de joc, plantilles de recepció i verificació amb l'acta (pestanya *Anàlisi assistida*) | Dades del §3 introduïbles i desades |
 | 0.2 ✅ | Suggeriments per lògica de joc | Codificació manual més ràpida |
 | 1.1 ✅ | Eina de calibració de pista i xarxa | Homografia i alçada de xarxa per vídeo |
-| 1.2 | `vidia-vision`: detecció de jugadors, pilota i àudio | Contactes i jugades detectats |
+| 1.2 ✅ | `vidia-vision`: detecció de jugadors, pilota i àudio | Contactes i jugades detectats |
 | 1.3 | Reajust automàtic dels temps del partit ja codificat | Primeres dades d'entrenament precises |
 | 1.4 | Assignació de jugadors i cua de revisió | Primer partit analitzat de punta a punta |
 | 2.1 | Recollida de dades i primer entrenament (≈ 10 partits) | Primeres propostes de fonament i zones |

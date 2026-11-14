@@ -1017,6 +1017,12 @@
       "savedList": "Calibracions desades",
       "fromLabel": "Des de {{time}}",
       "segmentsHelp": "Si la càmera es mou durant el partit, afegeix una calibració nova a partir d'aquell moment."
+    },
+    "package": {
+      "export": "Exporta el paquet d'anàlisi",
+      "help": "Fitxer per a l'eina local d'anàlisi de vídeo (vidia-vision): calibració, formacions, convocatòria, sistemes, acta i accions amb el seu temps. No inclou el vídeo ni els noms dels jugadors.",
+      "done": "Paquet exportat. Analitza'l amb: vidia-vision.cmd analyze paquet.json --video partit.mp4",
+      "noCalibration": "Paquet exportat, però sense calibració: calibra el vídeo abans d'analitzar-lo."
     }
   }
 }
