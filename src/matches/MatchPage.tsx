@@ -14,8 +14,9 @@ import { MatchStatsView } from '../stats/MatchStatsView';
 import { filterToParam } from '../video/clips';
 import { downloadMatchDvw } from '../dvw/exportMatch';
 import { exportMatchExcel } from '../stats/matchExcel';
+import { RecognitionTab } from '../recognition/RecognitionTab';
 
-type Tab = 'live' | 'roster' | 'stats';
+type Tab = 'live' | 'roster' | 'stats' | 'analysis';
 
 export function MatchPage() {
   const { matchId } = useParams<{ matchId: string }>();
@@ -25,7 +26,7 @@ export function MatchPage() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const tabParam = params.get('tab');
-  const tab: Tab = tabParam === 'roster' || tabParam === 'stats' ? tabParam : 'live';
+  const tab: Tab = tabParam === 'roster' || tabParam === 'stats' || tabParam === 'analysis' ? tabParam : 'live';
   const [editing, setEditing] = useState(false);
 
   if (m.loading) return <Spinner />;
@@ -117,6 +118,14 @@ export function MatchPage() {
         >
           {t('matches.tabRoster')} <span className="muted">({m.players.length})</span>
         </button>
+        <button
+          role="tab"
+          aria-selected={tab === 'analysis'}
+          className={tab === 'analysis' ? 'on' : ''}
+          onClick={() => setParams({ tab: 'analysis' })}
+        >
+          {t('recognition.tab')}
+        </button>
       </div>
 
       <Modal title={t('matchInfo.title')} open={editing} onClose={() => setEditing(false)}>
@@ -143,6 +152,7 @@ export function MatchPage() {
       )}
       {tab === 'stats' && <MatchStatsView m={m} onShowClips={(f) => setParams({ clip: filterToParam(f) })} />}
       {tab === 'roster' && <RosterEditor m={m} />}
+      {tab === 'analysis' && <RecognitionTab m={m} />}
     </div>
   );
 }

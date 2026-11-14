@@ -802,5 +802,102 @@
     "breakPointHelp": "Punts guanyats quan l’equip serveix",
     "pdfTitle": "Rendiment dels equips",
     "pdfNote": "Escala de cada eix (0 al centre, 100 a la vora); els valors fora de l’escala es dibuixen a l’extrem."
+  },
+  "recognition": {
+    "tab": "Anàlisi assistida",
+    "set": "Set",
+    "team": "Equip",
+    "saved": "Desat.",
+    "unsaved": "Hi ha canvis sense desar.",
+    "missingMigration": "Per fer servir l'anàlisi assistida cal executar la migració supabase/migrations/0014_recognition.sql a l'SQL Editor de Supabase.",
+    "sections": {
+      "systems": "Sistema de joc",
+      "reception": "Recepció",
+      "sheet": "Verificació amb l'acta"
+    },
+    "systemNames": {
+      "51": "5-1 (S-OH-MB-OPP)",
+      "51m": "5-1 (S-MB-OH-OPP)",
+      "62": "6-2 (col·loca el de la zaga)",
+      "42": "4-2 (col·loca el de davant)"
+    },
+    "templates": {
+      "R2": "2 receptors",
+      "R3": "3 receptors (L + 2 OH)",
+      "R4": "4 receptors",
+      "R5": "5 receptors (W)"
+    },
+    "status": {
+      "saved": "Desat",
+      "proposed": "Proposta",
+      "changed": "Modificat"
+    },
+    "systems": {
+      "help": "El sistema es dedueix de la formació inicial de cada set i de la posició de cada jugador a la convocatòria. Revisa'l, corregeix-lo si cal i desa'l. El col·locador marcat és el de referència per numerar les rotacions (P1–P6).",
+      "noSets": "Encara no hi ha cap set començat. Entra la formació inicial del primer set a la pestanya Marcador.",
+      "lineup": "Formació inicial",
+      "system": "Sistema",
+      "setter": "Col·locador de referència",
+      "ambiguous": "Dos col·locadors: indica si és 6-2 o 4-2.",
+      "noSetter": "No hi ha cap col·locador a la formació: tria'l a mà.",
+      "unknownOrder": "No s'ha pogut deduir l'ordre: comprova el sistema.",
+      "mismatch": "No coincideix amb la posició de la convocatòria: {{list}}",
+      "save": "Desa els sistemes de joc"
+    },
+    "reception": {
+      "help": "La recepció es desa per equip i sistema de joc, i es reutilitza als partits següents. Parteix d'una plantilla i ajusta les rotacions que calgui.",
+      "template": "Plantilla",
+      "withLibero": "Amb líbero",
+      "rotation": "Rotació",
+      "courtLabel": "Recepció a la rotació P{{rotation}}",
+      "net": "XARXA",
+      "editHelp": "Arrossega els jugadors per col·locar-los. Un toc (o Espai) marca o desmarca qui rep. Amb el teclat: fletxes per moure (Maj = 1 m).",
+      "legal": "Col·locació reglamentària",
+      "frontBack": "La posició {{b}} ha d'estar més lluny de la xarxa que la {{a}}.",
+      "leftRight": "La posició {{a}} ha d'estar a l'esquerra de la {{b}}.",
+      "receivers": "Receptors",
+      "receiver": "receptor",
+      "setterHere": "Col·loca el jugador de la posició {{pos}}.",
+      "resetRotation": "Restableix aquesta rotació",
+      "resetAll": "Restableix-les totes",
+      "notation": "Notació de text",
+      "notationHelp": "Una rotació per línia: P1: S@1x MB1@4x OPP@2x OH1@7* L@8* OH2@9*. Rol@zona (1–9), x = a la xarxa, f = al fons, * = receptor. OH i MB sense número s'assignen per ordre.",
+      "applyText": "Aplica el text",
+      "discardText": "Descarta els canvis del text",
+      "copyText": "Copia",
+      "save": "Desa la recepció de {{team}}",
+      "parse": {
+        "syntax": "Línia {{line}}: no s'entén «{{text}}».",
+        "rotation": "Línia {{line}}: la rotació ha de ser P1–P6 («{{text}}»).",
+        "label": "Línia {{line}}: rol desconegut per a aquest sistema («{{text}}»).",
+        "zone": "Línia {{line}}: zona no vàlida («{{text}}»).",
+        "duplicate": "Línia {{line}}: rol repetit («{{text}}»)."
+      }
+    },
+    "sheet": {
+      "help": "Entra les dades de l'acta oficial. Els punts al canvi són el marcador de l'equip cada vegada que perd el servei, en ordre (les caselles de sota de cada servidor). Les diferències amb el partit codificat apareixen a dalt.",
+      "empty": "Encara no s'ha entrat cap dada de l'acta.",
+      "allOk": "Tot el que s'ha entrat de l'acta coincideix amb el partit codificat.",
+      "diffs_one": "{{count}} diferència amb el partit codificat:",
+      "diffs_other": "{{count}} diferències amb el partit codificat:",
+      "coded": "codificat",
+      "firstServe": "Primer servei",
+      "start": "Inici",
+      "end": "Final",
+      "minutes_one": "{{count}} minut",
+      "minutes_other": "{{count}} minuts",
+      "lineup": "Formació inicial",
+      "serveLoss": "Punts al canvi de servei",
+      "final": "Punts",
+      "notes": "Observacions",
+      "save": "Desa les dades de l'acta",
+      "diff": {
+        "missing_set": "Set {{set}}: és a l'acta ({{expected}}) però no s'ha codificat.",
+        "first_serve": "Set {{set}}: a l'acta serveix primer {{expected}}; al partit codificat, {{actual}}.",
+        "lineup": "Set {{set}}, {{team}}, posició {{pos}}: a l'acta hi ha el {{expected}}; al partit codificat, el {{actual}}.",
+        "serve_loss": "Set {{set}}, {{team}}, canvi de servei núm. {{n}}: a l'acta {{expected}}; al partit codificat {{actual}}.",
+        "final": "Set {{set}}: a l'acta {{expected}}; al partit codificat {{actual}}."
+      }
+    }
   }
 }

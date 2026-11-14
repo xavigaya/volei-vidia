@@ -1,6 +1,6 @@
 # Reconeixement de jugades a partir del vídeo — Document de disseny
 
-> Branca: `reconeixement-jugades` · Estat: **proposta, preguntes obertes resoltes** (encara no hi ha codi) · Data: novembre 2026
+> Branca: `reconeixement-jugades` · Estat: **etapa 0.1 feta** (sistemes de joc, recepció i verificació amb l'acta) · Data: novembre 2026
 
 ## 1. Objectiu
 
@@ -37,13 +37,14 @@ Abans de començar l'anàlisi, l'analista introdueix aquestes dades **per als do
 
 **a) Formació inicial de cada set.** Ja existeix (`lineup`, posicions I–VI, líberos, primer servei). Les substitucions i entrades del líbero es continuen registrant com ara. Amb això, el motor de partit (`src/engine/match.ts`) sap en tot moment qui és a cada posició.
 
-**b) Sistema de joc i ordre dels jugadors**, per equip i per set (per defecte, el del set anterior):
+**b) Sistema de joc i ordre dels jugadors**, per equip i per set. L'app el **dedueix** de la formació inicial i de la posició de cada jugador a la convocatòria (un col·locador → 5-1, i l'ordre segons qui va darrere seu; dos col·locadors oposats → 6-2 o 4-2, que cal confirmar). L'analista el revisa i el desa. Codis:
 
 | Sistema | Ordres habituals (posicions I→VI seguint la rotació) |
 |---|---|
-| 5-1 | `S-OH-MB-OPP-OH-MB` (+ L) o `S-MB-OH-OPP-MB-OH` (+ L) |
-| 6-2 | `S-OH-MB-S-OH-MB` (+ L); el col·locador és el de la zaga |
-| 4-2 | `S-OH-MB-S-OH-MB` (+ L); el col·locador és el de la davantera |
+| `51` · 5-1 | `S-OH-MB-OPP-OH-MB` (+ L) |
+| `51m` · 5-1 | `S-MB-OH-OPP-MB-OH` (+ L) |
+| `62` · 6-2 | `S-OH-MB-S-OH-MB` (+ L); el col·locador és el de la zaga |
+| `42` · 4-2 | `S-OH-MB-S-OH-MB` (+ L); el col·locador és el de la davantera |
 
 S'utilitzen els codis de posició que ja té l'app (`S`, `OH`, `OPP`, `MB`, `L`, `UNI`). Si l'ordre de la formació no coincideix amb el sistema declarat, l'app ho avisa però deixa continuar.
 
@@ -68,13 +69,37 @@ Amb els punts 1, s'obté la transformació de la imatge a metres del camp (homog
 
 **d) Sistema de recepció per rotació**: quins jugadors reben i on se situen en el moment del servei.
 
-- Plantilles predefinides per a cada sistema de joc: recepció de 2, 3, 4 o 5 jugadors.
-- Es poden ajustar rotació per rotació arrossegant els jugadors sobre un camp (reutilitzant `Court.tsx`).
-- Es desen per equip i es poden reutilitzar en altres partits (per defecte, l'última que va fer servir aquell equip).
+- Les rotacions s'identifiquen per la posició del col·locador de referència: **P1–P6** (com DataVolley).
+- Plantilles predefinides per a cada sistema de joc, calculades automàticament per a cada rotació i sempre reglamentàries:
+
+  | Plantilla | Receptors |
+  |---|---|
+  | `R2` | 2 receptors (OH1 + OH2) |
+  | `R3` | 3 receptors: L + OH1 + OH2 (la més habitual en 5-1; per defecte) |
+  | `R4` | 4 receptors: R3 + OPP (o el col·locador que no col·loca, en 6-2 / 4-2) |
+  | `R5` | 5 receptors, en W (tots menys el col·locador) |
+
+- Editor visual: mig camp amb els jugadors (rol i dorsal) que s'arrosseguen; un toc marca o desmarca qui rep; avisa de les faltes de posició (davant/darrere i esquerra/dreta).
+- Notació de text, una rotació per línia, amb rol@zona (zones 1–9 de l'app), `x` = a la xarxa, `f` = al fons i `*` = receptor:
+
+  ```
+  P1: S@1x MB1@4x OPP@2x OH1@7* L@8* OH2@9*
+  ```
+
+- Es desen per equip i sistema de joc, i es reutilitzen en altres partits.
 
 Si no s'introdueix, el sistema fa servir la plantilla per defecte del sistema de joc. A partir de la fase 2 podrà proposar la formació real que ha observat al vídeo (§7.3).
 
-### 3.3 Per què són importants
+### 3.3 Verificació amb l'acta oficial
+
+Per assegurar que els partits que serviran per entrenar estan ben codificats, es poden entrar les dades de l'acta (FCVB / RFEVB) i l'app les compara amb el partit codificat:
+
+- per set: primer servei, hora d'inici i final (durada), formació inicial dels dos equips i resultat;
+- per equip: els **punts al canvi de servei** (el marcador propi cada vegada que perd el servei, en ordre).
+
+L'app llista les diferències (p. ex. *«Set 2, equip local, canvi de servei núm. 5: a l'acta 14; al partit codificat 13»*). L'acta no indica les entrades i sortides del líbero; l'app ja les dedueix.
+
+### 3.4 Per què són importants
 
 Amb la càmera darrere el fons i a 1080p, llegir els dorsals no és fiable. Combinant la formació, el sistema de joc i el sistema de recepció amb la **posició detectada de cada jugador al camp**, el sistema pot saber qui és qui sense llegir dorsals (§6.4). També redueix molt les dades necessàries per entrenar.
 
@@ -230,8 +255,9 @@ Canvis mínims al codi existent: un punt d'entrada a la pàgina del partit (`Mat
 
 ### 8.2 Base de dades (migració nova `0014_recognition.sql`)
 
-- `match_team_setup`: sistema de joc, ordre i sistema de recepció per partit, equip i set.
-- `team_reception_systems`: sistemes de recepció guardats per equip, per reutilitzar.
+- `match_team_systems` *(fet, etapa 0.1)*: sistema de joc i col·locador de referència per partit, equip i set.
+- `team_reception_systems` *(fet, etapa 0.1)*: sistemes de recepció guardats per equip i sistema de joc.
+- `match_scoresheets` *(fet, etapa 0.1)*: dades de l'acta oficial per a la verificació.
 - `video_calibrations`: punts de calibració per partit / tram de vídeo i costat de cada equip per set.
 - `action_proposals`: propostes pendents de revisar (partit, jugada, temps, acció proposada, confiança, estat: pendent / acceptada / corregida / rebutjada, versió del model).
 
@@ -271,7 +297,7 @@ Tots dos en JSON amb número de versió del format.
 
 | Etapa | Contingut | Resultat |
 |---|---|---|
-| 0.1 | Sistemes de joc, plantilles de recepció i formulari de dades prèvies | Dades del §3 introduïbles i desades |
+| 0.1 ✅ | Sistemes de joc, plantilles de recepció i verificació amb l'acta (pestanya *Anàlisi assistida*) | Dades del §3 introduïbles i desades |
 | 0.2 | Suggeriments per lògica de joc | Codificació manual més ràpida |
 | 1.1 | Eina de calibració de pista i xarxa | Homografia i alçada de xarxa per vídeo |
 | 1.2 | `vidia-vision`: detecció de jugadors, pilota i àudio | Contactes i jugades detectats |

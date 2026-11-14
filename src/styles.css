@@ -721,3 +721,54 @@ input.search { max-width: 260px; }
 .summaries .radar { grid-template-columns: 1fr; }
 .badge.badge-warn { background: color-mix(in srgb, var(--warn) 22%, transparent); color: inherit; margin-left: 6px; font-size: 0.72rem; }
 .segmented.small-seg button { padding: 4px 8px; font-size: 0.8rem; }
+
+/* ---------- Anàlisi assistida (reconeixement de jugades, fase 0.1) ---------- */
+.rec-tab > .segmented { flex-wrap: wrap; align-self: flex-start; }
+.rec-systems td { vertical-align: top; }
+.rec-lu { display: inline-block; margin-right: 8px; padding: 1px 3px; border-radius: 4px; }
+.rec-lu sub { color: var(--muted); font-size: 0.7em; margin-left: 1px; }
+.rec-lu-setter { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+.badge.rec-proposed { background: color-mix(in srgb, var(--warn) 15%, var(--surface)); color: var(--warn); }
+.badge.rec-changed { background: color-mix(in srgb, var(--accent) 25%, var(--surface)); color: var(--text); }
+.badge.rec-saved { background: color-mix(in srgb, var(--ok) 15%, var(--surface)); color: var(--ok); }
+
+.rec-toolbar { align-items: flex-end; gap: 12px; }
+.rec-inline { flex: 0 0 auto; }
+.rec-inline select { width: auto; }
+.rec-rotations { align-self: flex-start; flex-wrap: wrap; }
+.rec-rotations button { min-width: 56px; padding: 0 10px; }
+
+.rec-editor { display: grid; grid-template-columns: minmax(0, 460px) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 760px) { .rec-editor { grid-template-columns: 1fr; } }
+.rec-court { width: 100%; height: auto; display: block; touch-action: none; user-select: none; border-radius: var(--radius); }
+.rec-net-label { font-size: 0.45px; fill: #fff; text-anchor: middle; font-weight: 700; letter-spacing: 0.08px; pointer-events: none; }
+.rec-token { cursor: default; outline: none; }
+.rec-token.editable { cursor: grab; }
+.rec-token.editable:active { cursor: grabbing; }
+.rec-token circle { fill: #fff; stroke: var(--team, var(--brand)); stroke-width: 0.12; }
+.rec-token.receiver circle { fill: var(--team, var(--brand)); stroke: #fff; }
+.rec-token.selected circle, .rec-token:focus-visible circle { stroke: var(--accent); stroke-width: 0.2; }
+.rec-token.bad circle { stroke: var(--danger); stroke-width: 0.22; stroke-dasharray: 0.25 0.12; }
+.rec-token-label { font-size: 0.42px; font-weight: 800; text-anchor: middle; fill: #111; pointer-events: none; }
+.rec-token-num { font-size: 0.34px; font-weight: 600; text-anchor: middle; fill: #111; font-family: var(--mono); pointer-events: none; }
+.rec-token.receiver .rec-token-label, .rec-token.receiver .rec-token-num { fill: #fff; paint-order: stroke; stroke: rgba(0, 0, 0, 0.35); stroke-width: 0.04px; }
+.rec-token-pos { font-size: 0.3px; fill: #fff; font-weight: 700; pointer-events: none; }
+.rec-violations { margin: 0; padding-left: 18px; }
+.rec-notation summary { cursor: pointer; font-weight: 600; }
+.rec-notation textarea { width: 100%; font-size: 0.9rem; }
+
+.rec-result.all-ok { border-left: 4px solid var(--ok); }
+.rec-result.has-diffs { border-left: 4px solid var(--warn); }
+.rec-diffs { margin: 8px 0 0; padding-left: 20px; }
+.rec-sheet-sets { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 14px; }
+.rec-sheet-set { margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.rec-sheet-set legend { font-weight: 700; padding: 0 6px; }
+.rec-sheet-head { gap: 10px; align-items: flex-end; }
+.rec-sheet-head .field { flex: 1 1 110px; }
+.rec-mins { padding-bottom: 12px; }
+.rec-sheet-team { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+.rec-sheet-team-name { grid-column: 1 / -1; font-weight: 700; }
+.rec-sheet-lineup { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+.rec-sheet-pos { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 0.75rem; color: var(--muted); font-weight: 700; }
+.rec-sheet-pos .num-input { width: 52px; padding: 6px 4px; font-size: 1rem; color: var(--text); }
+.rec-final .num-input { width: 64px; }

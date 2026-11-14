@@ -802,5 +802,102 @@
     "breakPointHelp": "Puntos ganados cuando el equipo saca",
     "pdfTitle": "Rendimiento de los equipos",
     "pdfNote": "Escala de cada eje (0 en el centro, 100 en el borde); los valores fuera de escala se dibujan en el extremo."
+  },
+  "recognition": {
+    "tab": "Análisis asistido",
+    "set": "Set",
+    "team": "Equipo",
+    "saved": "Guardado.",
+    "unsaved": "Hay cambios sin guardar.",
+    "missingMigration": "Para usar el análisis asistido hay que ejecutar la migración supabase/migrations/0014_recognition.sql en el SQL Editor de Supabase.",
+    "sections": {
+      "systems": "Sistema de juego",
+      "reception": "Recepción",
+      "sheet": "Verificación con el acta"
+    },
+    "systemNames": {
+      "51": "5-1 (S-OH-MB-OPP)",
+      "51m": "5-1 (S-MB-OH-OPP)",
+      "62": "6-2 (coloca el de zaguera)",
+      "42": "4-2 (coloca el de delante)"
+    },
+    "templates": {
+      "R2": "2 receptores",
+      "R3": "3 receptores (L + 2 OH)",
+      "R4": "4 receptores",
+      "R5": "5 receptores (W)"
+    },
+    "status": {
+      "saved": "Guardado",
+      "proposed": "Propuesta",
+      "changed": "Modificado"
+    },
+    "systems": {
+      "help": "El sistema se deduce de la formación inicial de cada set y de la posición de cada jugador en la convocatoria. Revísalo, corrígelo si hace falta y guárdalo. El colocador marcado es el de referencia para numerar las rotaciones (P1–P6).",
+      "noSets": "Todavía no hay ningún set empezado. Introduce la formación inicial del primer set en la pestaña Marcador.",
+      "lineup": "Formación inicial",
+      "system": "Sistema",
+      "setter": "Colocador de referencia",
+      "ambiguous": "Dos colocadores: indica si es 6-2 o 4-2.",
+      "noSetter": "No hay ningún colocador en la formación: elígelo a mano.",
+      "unknownOrder": "No se ha podido deducir el orden: comprueba el sistema.",
+      "mismatch": "No coincide con la posición de la convocatoria: {{list}}",
+      "save": "Guarda los sistemas de juego"
+    },
+    "reception": {
+      "help": "La recepción se guarda por equipo y sistema de juego, y se reutiliza en los partidos siguientes. Parte de una plantilla y ajusta las rotaciones que haga falta.",
+      "template": "Plantilla",
+      "withLibero": "Con líbero",
+      "rotation": "Rotación",
+      "courtLabel": "Recepción en la rotación P{{rotation}}",
+      "net": "RED",
+      "editHelp": "Arrastra los jugadores para colocarlos. Un toque (o Espacio) marca o desmarca quién recibe. Con el teclado: flechas para mover (Mayús = 1 m).",
+      "legal": "Colocación reglamentaria",
+      "frontBack": "La posición {{b}} debe estar más lejos de la red que la {{a}}.",
+      "leftRight": "La posición {{a}} debe estar a la izquierda de la {{b}}.",
+      "receivers": "Receptores",
+      "receiver": "receptor",
+      "setterHere": "Coloca el jugador de la posición {{pos}}.",
+      "resetRotation": "Restablece esta rotación",
+      "resetAll": "Restablécelas todas",
+      "notation": "Notación de texto",
+      "notationHelp": "Una rotación por línea: P1: S@1x MB1@4x OPP@2x OH1@7* L@8* OH2@9*. Rol@zona (1–9), x = en la red, f = al fondo, * = receptor. OH y MB sin número se asignan por orden.",
+      "applyText": "Aplica el texto",
+      "discardText": "Descarta los cambios del texto",
+      "copyText": "Copia",
+      "save": "Guarda la recepción de {{team}}",
+      "parse": {
+        "syntax": "Línea {{line}}: no se entiende «{{text}}».",
+        "rotation": "Línea {{line}}: la rotación debe ser P1–P6 («{{text}}»).",
+        "label": "Línea {{line}}: rol desconocido para este sistema («{{text}}»).",
+        "zone": "Línea {{line}}: zona no válida («{{text}}»).",
+        "duplicate": "Línea {{line}}: rol repetido («{{text}}»)."
+      }
+    },
+    "sheet": {
+      "help": "Introduce los datos del acta oficial. Los puntos al cambio son el marcador del equipo cada vez que pierde el saque, en orden (las casillas bajo cada sacador). Las diferencias con el partido codificado aparecen arriba.",
+      "empty": "Todavía no se ha introducido ningún dato del acta.",
+      "allOk": "Todo lo introducido del acta coincide con el partido codificado.",
+      "diffs_one": "{{count}} diferencia con el partido codificado:",
+      "diffs_other": "{{count}} diferencias con el partido codificado:",
+      "coded": "codificado",
+      "firstServe": "Primer saque",
+      "start": "Inicio",
+      "end": "Final",
+      "minutes_one": "{{count}} minuto",
+      "minutes_other": "{{count}} minutos",
+      "lineup": "Formación inicial",
+      "serveLoss": "Puntos al cambio de saque",
+      "final": "Puntos",
+      "notes": "Observaciones",
+      "save": "Guarda los datos del acta",
+      "diff": {
+        "missing_set": "Set {{set}}: está en el acta ({{expected}}) pero no se ha codificado.",
+        "first_serve": "Set {{set}}: en el acta saca primero {{expected}}; en el partido codificado, {{actual}}.",
+        "lineup": "Set {{set}}, {{team}}, posición {{pos}}: en el acta está el {{expected}}; en el partido codificado, el {{actual}}.",
+        "serve_loss": "Set {{set}}, {{team}}, cambio de saque n.º {{n}}: en el acta {{expected}}; en el partido codificado {{actual}}.",
+        "final": "Set {{set}}: en el acta {{expected}}; en el partido codificado {{actual}}."
+      }
+    }
   }
 }

@@ -99,6 +99,13 @@ Per fer-ho servir en un pavelló sense cobertura: obre el partit abans de sortir
 - El vídeo no es reinicia en canviar de pestanya del partit (s'atura i continua on era) i cada dispositiu recorda on s'havia quedat cada vídeo.
 - Correcció de l'alineació inicial d'un set ja començat (botó *✎ Alineació del set*): es recalculen les rotacions i no es desa si alguna acció codificada deixa de ser vàlida.
 
+**Reconeixement de jugades — Etapa 0.1** (branca `reconeixement-jugades`; disseny a `docs/reconeixement-jugades.md`)
+
+- Pestanya nova *Anàlisi assistida* a cada partit (cal executar la migració `0014_recognition.sql`).
+- **Sistema de joc** de cada equip a cada set (5-1 en dos ordres, 6-2 i 4-2), deduït de la formació inicial i de les posicions de la convocatòria, amb avís si no hi coincideixen. Les rotacions es numeren P1–P6 per la posició del col·locador.
+- **Sistema de recepció** per equip i sistema de joc: plantilles de 2, 3, 4 o 5 receptors calculades per a cada rotació, editor visual (arrossegar i tocar per marcar receptors, també amb teclat), comprovació de faltes de posició i notació de text (`P1: S@1x MB1@4x OPP@2x OH1@7* L@8* OH2@9*`).
+- **Verificació amb l'acta oficial**: primer servei, formacions, punts a cada canvi de servei, resultat i durada de cada set; llista de diferències amb el partit codificat.
+
 ## Tecnologia
 
 - React + TypeScript + Vite (una sola base de codi per a totes les plataformes).
@@ -191,4 +198,5 @@ src/offline/           Còpia local, cua de canvis pendents i sincronització
 src-tauri/             Aplicació d'escriptori (Tauri)
 assets/                Icones i pantalla d'inici d'Android
 src/i18n/              Traduccions (ca.json és la referència)
+src/recognition/       Anàlisi assistida: sistemes de joc, recepció i verificació amb l'acta
 ```

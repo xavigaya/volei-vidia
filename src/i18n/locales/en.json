@@ -802,5 +802,102 @@
     "breakPointHelp": "Points won when serving",
     "pdfTitle": "Team performance",
     "pdfNote": "Scale of each axis (0 at the centre, 100 at the edge); values outside the scale are drawn at the end."
+  },
+  "recognition": {
+    "tab": "Assisted analysis",
+    "set": "Set",
+    "team": "Team",
+    "saved": "Saved.",
+    "unsaved": "There are unsaved changes.",
+    "missingMigration": "To use assisted analysis, run the migration supabase/migrations/0014_recognition.sql in the Supabase SQL Editor.",
+    "sections": {
+      "systems": "Game system",
+      "reception": "Reception",
+      "sheet": "Scoresheet check"
+    },
+    "systemNames": {
+      "51": "5-1 (S-OH-MB-OPP)",
+      "51m": "5-1 (S-MB-OH-OPP)",
+      "62": "6-2 (back-row setter sets)",
+      "42": "4-2 (front-row setter sets)"
+    },
+    "templates": {
+      "R2": "2 passers",
+      "R3": "3 passers (L + 2 OH)",
+      "R4": "4 passers",
+      "R5": "5 passers (W)"
+    },
+    "status": {
+      "saved": "Saved",
+      "proposed": "Proposed",
+      "changed": "Modified"
+    },
+    "systems": {
+      "help": "The system is inferred from each set's starting lineup and each player's position in the match roster. Review it, fix it if needed and save it. The marked setter is the reference for numbering rotations (P1–P6).",
+      "noSets": "No set has started yet. Enter the first set's starting lineup in the Scoreboard tab.",
+      "lineup": "Starting lineup",
+      "system": "System",
+      "setter": "Reference setter",
+      "ambiguous": "Two setters: choose 6-2 or 4-2.",
+      "noSetter": "There is no setter in the lineup: choose one manually.",
+      "unknownOrder": "The order could not be inferred: check the system.",
+      "mismatch": "Does not match the roster position: {{list}}",
+      "save": "Save game systems"
+    },
+    "reception": {
+      "help": "Reception is saved per team and game system, and reused in later matches. Start from a template and adjust the rotations you need.",
+      "template": "Template",
+      "withLibero": "With libero",
+      "rotation": "Rotation",
+      "courtLabel": "Reception in rotation P{{rotation}}",
+      "net": "NET",
+      "editHelp": "Drag players to place them. A tap (or Space) toggles who passes. Keyboard: arrows to move (Shift = 1 m).",
+      "legal": "Legal positions",
+      "frontBack": "Position {{b}} must be farther from the net than {{a}}.",
+      "leftRight": "Position {{a}} must be to the left of {{b}}.",
+      "receivers": "Passers",
+      "receiver": "passer",
+      "setterHere": "The player in position {{pos}} sets.",
+      "resetRotation": "Reset this rotation",
+      "resetAll": "Reset all",
+      "notation": "Text notation",
+      "notationHelp": "One rotation per line: P1: S@1x MB1@4x OPP@2x OH1@7* L@8* OH2@9*. Role@zone (1–9), x = at the net, f = at the back, * = passer. OH and MB without a number are assigned in order.",
+      "applyText": "Apply text",
+      "discardText": "Discard text changes",
+      "copyText": "Copy",
+      "save": "Save {{team}} reception",
+      "parse": {
+        "syntax": "Line {{line}}: cannot read “{{text}}”.",
+        "rotation": "Line {{line}}: rotation must be P1–P6 (“{{text}}”).",
+        "label": "Line {{line}}: unknown role for this system (“{{text}}”).",
+        "zone": "Line {{line}}: invalid zone (“{{text}}”).",
+        "duplicate": "Line {{line}}: repeated role (“{{text}}”)."
+      }
+    },
+    "sheet": {
+      "help": "Enter the official scoresheet data. Points at side-out are the team's score each time it loses the serve, in order (the boxes under each server). Differences with the coded match appear above.",
+      "empty": "No scoresheet data has been entered yet.",
+      "allOk": "Everything entered from the scoresheet matches the coded match.",
+      "diffs_one": "{{count}} difference with the coded match:",
+      "diffs_other": "{{count}} differences with the coded match:",
+      "coded": "coded",
+      "firstServe": "First serve",
+      "start": "Start",
+      "end": "End",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes",
+      "lineup": "Starting lineup",
+      "serveLoss": "Points at loss of serve",
+      "final": "Points",
+      "notes": "Notes",
+      "save": "Save scoresheet data",
+      "diff": {
+        "missing_set": "Set {{set}}: on the scoresheet ({{expected}}) but not coded.",
+        "first_serve": "Set {{set}}: on the scoresheet {{expected}} serves first; in the coded match, {{actual}}.",
+        "lineup": "Set {{set}}, {{team}}, position {{pos}}: scoresheet has {{expected}}; coded match has {{actual}}.",
+        "serve_loss": "Set {{set}}, {{team}}, loss of serve #{{n}}: scoresheet {{expected}}; coded match {{actual}}.",
+        "final": "Set {{set}}: scoresheet {{expected}}; coded match {{actual}}."
+      }
+    }
   }
 }
