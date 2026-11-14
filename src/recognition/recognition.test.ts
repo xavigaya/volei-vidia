@@ -224,3 +224,61 @@ describe('importació de l\'acta en JSON', () => {
     expect(parseScoresheetJson('{"sets":[{"number":9}]}')).toEqual({ ok: false, error: 'set_number' });
   });
 });
+
+import { readFileSync } from 'node:fs';
+import { codedWinners, firstDivergence, rallySequence } from './scoresheet';
+
+describe('seqüència de punts de l\'acta', () => {
+  const actaJ2 = parseScoresheetJson(readFileSync(new URL('../../docs/exemples/acta-balafia-farners-J2.json', import.meta.url), 'utf8'));
+
+  it('reconstrueix els quatre sets de l\'acta Balàfia–Farners amb el resultat correcte', () => {
+    expect(actaJ2.ok).toBe(true);
+    if (!actaJ2.ok) return;
+    const finals = actaJ2.sheet.sets.map((s) => {
+      const seq = rallySequence(s);
+      expect(seq.consistent, `set ${s.number}: ${seq.error}`).toBe(true);
+      expect(seq.rallies).toHaveLength(s.final.h! + s.final.a!);
+      return seq.rallies[seq.rallies.length - 1].after;
+    });
+    expect(finals).toEqual([
+      { h: 25, a: 22 },
+      { h: 19, a: 25 },
+      { h: 19, a: 25 },
+      { h: 14, a: 25 },
+    ]);
+  });
+
+  it('serveix el primer equip, rota en recuperar el servei i el jugador surt de la formació', () => {
+    if (!actaJ2.ok) return;
+    const seq = rallySequence(actaJ2.sheet.sets[0]); // serveix primer el visitant (Farners)
+    expect(seq.rallies[0]).toMatchObject({ server: 'A', serverPlayer: 13 });
+    // El Farners perd el servei amb 4 punts: el punt 5 el guanya el Balàfia
+    expect(seq.rallies[4]).toMatchObject({ server: 'A', winner: 'H', after: { h: 1, a: 4 } });
+    // El Balàfia serveix amb el jugador de la posició II (ha rotat)
+    expect(seq.rallies[5]).toMatchObject({ server: 'H', serverPlayer: 2 });
+  });
+
+  it('detecta incoherències i dades incompletes', () => {
+    const s = emptySet(1);
+    expect(rallySequence(s).error).toBe('no_first_serve');
+    s.firstServe = 'H';
+    s.home.serveLoss = [3];
+    expect(rallySequence(s)).toMatchObject({ complete: false, consistent: false });
+    s.home.serveLoss = [3, 2];
+    s.away.serveLoss = [5];
+    expect(rallySequence(s).error).toBe('decreasing');
+  });
+
+  it('compara amb el partit codificat', () => {
+    const evs2 = events([{ type: 'lineup', home: HL, away: AL, serving: 'H' }, p('H'), p('A'), p('A')]);
+    const w = codedWinners(evs2, DEFAULT_RULES).get(1)!;
+    expect(w).toEqual(['H', 'A', 'A']);
+    const s = emptySet(1);
+    s.firstServe = 'H';
+    s.home.serveLoss = [1, 5];
+    s.away.serveLoss = [1];
+    const acta = rallySequence(s).rallies; // H, A, H, ...
+    expect(firstDivergence(acta, w)).toBe(2);
+    expect(firstDivergence(acta, w.slice(0, 2))).toBeNull();
+  });
+});

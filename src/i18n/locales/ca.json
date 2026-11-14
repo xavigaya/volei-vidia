@@ -927,6 +927,14 @@
         "replace": "Ja hi ha dades de l'acta. Les vols substituir per les del fitxer?",
         "done_one": "S'ha importat {{count}} set. Revisa'l i desa.",
         "done_other": "S'han importat {{count}} sets. Revisa'ls i desa."
+      },
+      "sequence": {
+        "ok": "Seqüència de punts coherent ({{count}} punts).",
+        "incomplete": "Seqüència incompleta: amb les dades entrades s'arriba a {{score}} ({{count}} punts).",
+        "decreasing": "Els punts al canvi d'un equip no poden baixar: revisa-ho.",
+        "leftover": "Sobren punts al canvi: no quadren amb el final del set.",
+        "final_mismatch": "La seqüència acaba {{score}}, que no coincideix amb el resultat entrat.",
+        "no_first_serve": "Falta el primer servei."
       }
     },
     "suggest": {
@@ -951,6 +959,17 @@
         "notation": "La notació de text del fitxer té errors ({{detail}}).",
         "entries": "Hi ha una entrada no vàlida al fitxer (núm. {{detail}})."
       }
+    },
+    "acta": {
+      "lineupFromActa": "Formació i primer servei presos de l'acta (Anàlisi assistida). Revisa'ls i els líberos abans de començar.",
+      "unknownPlayers": "Aquests dorsals de l'acta no són a la convocatòria (o hi són com a líbero): {{list}}.",
+      "useActaLineup": "Usa la formació de l'acta",
+      "fixDiffers": "La formació o el primer servei d'aquest set no coincideixen amb l'acta.",
+      "expected": "Acta · punt {{n}} ({{score}}): serveix {{server}} (núm. {{player}}) · el guanya {{winner}}.",
+      "serverMismatch": "Al partit codificat serveix l'altre equip: revisa els punts anteriors.",
+      "diverged": "La codificació del set {{set}} no coincideix amb l'acta des del punt {{n}} ({{score}}), que segons l'acta guanya {{winner}}. Revisa-ho a Anàlisi assistida → Verificació amb l'acta.",
+      "expectedPoint": "Segons l'acta, aquest punt el guanya aquest equip.",
+      "againstActa": "Segons l'acta, aquest punt el guanya {{team}}."
     }
   }
 }

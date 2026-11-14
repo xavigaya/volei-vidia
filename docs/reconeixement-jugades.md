@@ -130,6 +130,12 @@ L'acta, el sistema de recepció i el sistema de joc es poden **exportar i import
 - En importar sistemes de joc, el col·locador es busca pel **dorsal** (`setter`) a la formació de cada set; si no hi és, es fa servir la posició (`anchor`, 0–5 = I–VI).
 - Les dades importades queden a punt per revisar i s'han de desar.
 
+**Seqüència de punts de l'acta:** amb el primer servei i els punts al canvi de servei, l'app reconstrueix punt a punt qui serveix (equip i, amb la formació, jugador), qui guanya el punt i el marcador (`rallySequence` a `src/recognition/scoresheet.ts`). Es fa servir:
+
+- **a la verificació**, per avisar si les dades entrades no quadren (seqüència incompleta, valors que baixen, resultat diferent);
+- **al Marcador**: la formació i el primer servei de l'acta omplen el formulari d'alineació de cada set; durant la codificació es mostra el punt esperat (qui serveix i qui el guanya), es destaca el botó de punt de l'equip que el guanya i s'avisa des del primer punt on la codificació es desquadra;
+- **al reconeixement automàtic (fase 1)**: el paquet d'anàlisi inclourà aquesta seqüència. Saber quants punts té cada set, qui serveix i qui guanya cada punt limita molt la segmentació del vídeo en jugades, permet comprovar la detecció del servei i decideix la jugada final de cada punt (qui guanya el punt) sense haver-la de deduir de les imatges.
+
 Plantilla d'exemple: `docs/exemples/plantilla-acta.json`.
 
 **Actes digitals no oficials:** a més de l'acta oficial en paper, Claude pot convertir a aquest JSON les transcripcions digitals (PDF amb text) que se li passin, comprovant que els punts al canvi de servei reprodueixen el resultat de cada set.
@@ -310,7 +316,7 @@ Les propostes es desen al núvol perquè es puguin revisar des de la tauleta. Le
 
 ### 8.3 Formats d'intercanvi
 
-- **Paquet d'anàlisi** (app → eina): partit, convocatòries, formacions, sistemes de joc i recepció, calibració, accions ja codificades amb temps, nom del fitxer de vídeo.
+- **Paquet d'anàlisi** (app → eina): partit, convocatòries, formacions, sistemes de joc i recepció, calibració, accions ja codificades amb temps, nom del fitxer de vídeo i, si hi ha acta, la seqüència de punts de cada set (servidor, guanyador i marcador de cada punt).
 - **Propostes** (eina → app): llista d'accions proposades amb temps, confiança per camp i, opcionalment, temps reajustats d'accions existents.
 
 Tots dos en JSON amb número de versió del format.

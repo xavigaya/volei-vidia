@@ -927,6 +927,14 @@
         "replace": "There is already scoresheet data. Replace it with the file's?",
         "done_one": "{{count}} set imported. Review it and save.",
         "done_other": "{{count}} sets imported. Review them and save."
+      },
+      "sequence": {
+        "ok": "Rally sequence is consistent ({{count}} rallies).",
+        "incomplete": "Incomplete sequence: the data entered reaches {{score}} ({{count}} rallies).",
+        "decreasing": "A team's points at loss of serve cannot go down: check them.",
+        "leftover": "Extra points at loss of serve: they don't fit the end of the set.",
+        "final_mismatch": "The sequence ends {{score}}, which does not match the result entered.",
+        "no_first_serve": "First serve is missing."
       }
     },
     "suggest": {
@@ -951,6 +959,17 @@
         "notation": "The file's text notation has errors ({{detail}}).",
         "entries": "There is an invalid entry in the file (#{{detail}})."
       }
+    },
+    "acta": {
+      "lineupFromActa": "Lineup and first serve taken from the scoresheet (Assisted analysis). Check them and the liberos before starting.",
+      "unknownPlayers": "These scoresheet numbers are not in the match roster (or are liberos): {{list}}.",
+      "useActaLineup": "Use the scoresheet lineup",
+      "fixDiffers": "This set's lineup or first serve does not match the scoresheet.",
+      "expected": "Scoresheet · rally {{n}} ({{score}}): {{server}} serves (#{{player}}) · {{winner}} wins it.",
+      "serverMismatch": "In the coded match the other team is serving: check the previous rallies.",
+      "diverged": "Set {{set}} coding diverges from the scoresheet from rally {{n}} ({{score}}), which the scoresheet gives to {{winner}}. Check it in Assisted analysis → Scoresheet check.",
+      "expectedPoint": "According to the scoresheet, this team wins this rally.",
+      "againstActa": "According to the scoresheet, {{team}} wins this rally."
     }
   }
 }

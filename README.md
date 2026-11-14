@@ -108,6 +108,7 @@ Per fer-ho servir en un pavelló sense cobertura: obre el partit abans de sortir
 - **Recepció per defecte del club**: la recepció d'un equip es pot aplicar a tots els partits (migració `0015_reception_defaults.sql`).
 - **Acta**: visor de la foto o el PDF al costat del formulari (girar, ampliar) i importació de les dades en JSON.
 - **Exportació i importació en JSON** de l'acta, del sistema de recepció i del sistema de joc (formats a `docs/reconeixement-jugades.md`, §3.4).
+- **Acta al Marcador**: la formació i el primer servei de l'acta omplen el formulari d'alineació de cada set; durant la codificació es mostra qui serveix i qui guanya cada punt segons l'acta i s'avisa si la codificació se'n desquadra.
 
 **Reconeixement de jugades — Etapa 0.2**
 

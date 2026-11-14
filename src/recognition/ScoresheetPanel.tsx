@@ -11,6 +11,7 @@ import {
   emptySet,
   parseNumberList,
   parseScoresheetJson,
+  rallySequence,
   type Diff,
   type Scoresheet,
   type ScoresheetSet,
@@ -169,6 +170,8 @@ export function ScoresheetPanel({ m, r, canEdit }: Props) {
         {sheet.sets.map((s) => {
           const c = coded.find((x) => x.number === s.number);
           const mins = durationMinutes(s.start, s.end);
+          const target = s.number === maxSets ? match.tiebreak_points : match.points_per_set;
+          const seq = s.firstServe && (s.home.serveLoss.length || s.away.serveLoss.length) ? rallySequence(s, target) : null;
           return (
             <fieldset key={s.number} className="card rec-sheet-set" disabled={!canEdit}>
               <legend>
@@ -180,6 +183,16 @@ export function ScoresheetPanel({ m, r, canEdit }: Props) {
                   </span>
                 )}
               </legend>
+              {seq && (
+                <div className={`small ${seq.consistent ? 'ok' : 'warn'}`}>
+                  {seq.consistent
+                    ? `✓ ${t('recognition.sheet.sequence.ok', { count: seq.rallies.length })}`
+                    : t(`recognition.sheet.sequence.${seq.error ?? 'incomplete'}`, {
+                        count: seq.rallies.length,
+                        score: seq.rallies.length ? `${seq.rallies[seq.rallies.length - 1].after.h}-${seq.rallies[seq.rallies.length - 1].after.a}` : '0-0',
+                      })}
+                </div>
+              )}
               <div className="row wrap rec-sheet-head">
                 <label className="field">
                   <span>{t('recognition.sheet.firstServe')}</span>

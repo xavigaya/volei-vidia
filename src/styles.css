@@ -788,3 +788,8 @@ input.search { max-width: 260px; }
 .ap-suggest-chip { display: inline-flex; gap: 6px; align-items: baseline; border-left: 4px solid var(--team, var(--brand)); }
 .ap-suggest-chip.alt { opacity: 0.85; border-style: dashed; border-left-style: solid; }
 .ap-suggest-chip .muted-on { opacity: 0.75; }
+/* Acta durant la codificació */
+.acta-hint { border-left: 4px solid var(--brand); }
+.acta-hint.acta-diverged { border-left-color: var(--warn); }
+.btn-point.acta-expected { box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 55%, transparent); }
+.ap-eval.acta-against { opacity: 0.55; border-style: dashed; }

@@ -227,3 +227,117 @@ export function parseScoresheetJson(text: string, maxSets = 5): ImportResult {
   }
   return { ok: true, sheet: { sets, notes: typeof obj.notes === 'string' ? obj.notes : null } };
 }
+
+// ---------------------------------------------------------------------
+// Seqüència de punts reconstruïda a partir de l'acta
+//
+// Amb el primer servei i els punts al canvi de servei de cada equip es pot
+// saber, punt a punt, qui serveix, qui el guanya i el marcador. Amb la
+// formació inicial, també qui és el jugador que serveix (sense tenir en
+// compte els canvis, que l'acta no relaciona amb cada punt).
+// ---------------------------------------------------------------------
+export interface Rally {
+  index: number; // 0 = primer punt del set
+  server: Side;
+  serverPlayer: number | null;
+  winner: Side;
+  // Marcador abans i després del punt
+  before: { h: number; a: number };
+  after: { h: number; a: number };
+}
+
+export interface RallySequence {
+  set: number;
+  rallies: Rally[];
+  complete: boolean; // arriba al final del set
+  consistent: boolean; // el resultat coincideix amb el de l'acta i no sobren dades
+  error?: 'no_first_serve' | 'decreasing' | 'leftover' | 'final_mismatch';
+}
+
+const otherSide = (s: Side): Side => (s === 'H' ? 'A' : 'H');
+
+export function rallySequence(ss: ScoresheetSet, target = 25): RallySequence {
+  const out: RallySequence = { set: ss.number, rallies: [], complete: false, consistent: false };
+  if (!ss.firstServe) return { ...out, error: 'no_first_serve' };
+  const lists = { H: ss.home.serveLoss, A: ss.away.serveLoss };
+  const lineups = {
+    H: ss.home.lineup.every((n) => n != null) ? (ss.home.lineup as number[]) : null,
+    A: ss.away.lineup.every((n) => n != null) ? (ss.away.lineup as number[]) : null,
+  };
+  const rot = { H: 0, A: 0 }; // rotacions des de l'inici del set
+  const idx = { H: 0, A: 0 };
+  const score = { H: 0, A: 0 };
+  let srv: Side = ss.firstServe;
+  const over = () => Math.max(score.H, score.A) >= target && Math.abs(score.H - score.A) >= 2;
+  const push = (winner: Side) => {
+    const before = { h: score.H, a: score.A };
+    score[winner] += 1;
+    const lu = lineups[srv];
+    out.rallies.push({
+      index: out.rallies.length,
+      server: srv,
+      serverPlayer: lu ? lu[rot[srv] % 6] : null,
+      winner,
+      before,
+      after: { h: score.H, a: score.A },
+    });
+  };
+
+  while (!over()) {
+    const list = lists[srv];
+    if (idx[srv] >= list.length) return out; // falten dades
+    const v = list[idx[srv]++];
+    if (v < score[srv]) return { ...out, error: 'decreasing' };
+    while (score[srv] < v && !over()) push(srv);
+    if (over()) break;
+    // Perd el servei: punt per a l'altre equip, que rota i passa a servir
+    const o = otherSide(srv);
+    push(o);
+    if (over()) break;
+    rot[o] += 1;
+    srv = o;
+  }
+  out.complete = true;
+  // Pot sobrar, com a molt, el resultat final escrit a la casella següent de l'equip que guanya rebent
+  const leftover = (['H', 'A'] as Side[]).flatMap((s) => lists[s].slice(idx[s]).map((v) => ({ s, v })));
+  const okLeftover = leftover.length === 0 || (leftover.length === 1 && leftover[0].v === score[leftover[0].s]);
+  if (!okLeftover) return { ...out, error: 'leftover' };
+  if ((ss.final.h != null && ss.final.h !== score.H) || (ss.final.a != null && ss.final.a !== score.A)) {
+    return { ...out, error: 'final_mismatch' };
+  }
+  out.consistent = true;
+  return out;
+}
+
+// Guanyador de cada punt del partit codificat, per set (per comparar-lo amb l'acta)
+export function codedWinners(events: MatchEvent[], rules: MatchRules, rosters: Rosters | null = null): Map<number, Side[]> {
+  let s = initialState(rules, rosters);
+  const out = new Map<number, Side[]>();
+  for (const ev of [...events].sort((a, b) => a.seq - b.seq)) {
+    const before = s;
+    try {
+      s = applyEvent(s, ev);
+    } catch (e) {
+      if (e instanceof EngineError) continue;
+      throw e;
+    }
+    if (ev.type === 'lineup') {
+      out.set(s.currentSet, []);
+      continue;
+    }
+    if (before.phase !== 'in_play') continue;
+    const last = s.sets[s.sets.length - 1];
+    const h = s.phase === 'in_play' ? s.score.H : last.home;
+    const a = s.phase === 'in_play' ? s.score.A : last.away;
+    if (h > before.score.H) out.get(before.currentSet)?.push('H');
+    else if (a > before.score.A) out.get(before.currentSet)?.push('A');
+  }
+  return out;
+}
+
+// Primer punt on la codificació no coincideix amb l'acta (null si coincideix fins on arriba)
+export function firstDivergence(acta: Rally[], coded: Side[]): number | null {
+  const n = Math.min(acta.length, coded.length);
+  for (let i = 0; i < n; i++) if (acta[i].winner !== coded[i]) return i;
+  return null;
+}

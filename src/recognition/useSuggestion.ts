@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Side } from '../engine/match';
 import type { UseMatch } from '../matches/useMatch';
 import { suggestNext, type SuggestContext, type Suggestion } from './suggest';
+import { codedWinners, firstDivergence, rallySequence, type Rally, type RallySequence } from './scoresheet';
 import { useRecognition } from './useRecognition';
 
 const KEY = 'svidia.suggest';
@@ -53,5 +54,21 @@ export function useSuggestion(m: UseMatch, active: boolean) {
     [enabled, state, ctx],
   );
 
-  return { suggestion, enabled, setEnabled };
+  // Acta: seqüència de punts del set en curs, punt esperat i primer desquadrament
+  const acta = useMemo(() => {
+    const sheet = r.scoresheet;
+    if (!state || !sheet || state.currentSet === 0) return { sheet, sequence: null, expected: null, divergence: null };
+    const set = state.currentSet;
+    const ss = sheet.sets.find((s) => s.number === set);
+    const target = set === state.rules.setsToWin * 2 - 1 ? state.rules.tiebreakPoints : state.rules.pointsPerSet;
+    const sequence: RallySequence | null = ss ? rallySequence(ss, target) : null;
+    if (!sequence || sequence.rallies.length === 0) return { sheet, sequence, expected: null, divergence: null };
+    const winners = codedWinners(m.events, state.rules).get(set) ?? [];
+    const divergence = firstDivergence(sequence.rallies, winners);
+    const expected: Rally | null =
+      state.phase === 'in_play' ? (sequence.rallies[state.score.H + state.score.A] ?? null) : null;
+    return { sheet, sequence, expected, divergence };
+  }, [r.scoresheet, state, m.events]);
+
+  return { suggestion, enabled, setEnabled, acta, scoresheet: r.scoresheet };
 }

@@ -927,6 +927,14 @@
         "replace": "Ya hay datos del acta. ¿Quieres sustituirlos por los del archivo?",
         "done_one": "Se ha importado {{count}} set. Revísalo y guarda.",
         "done_other": "Se han importado {{count}} sets. Revísalos y guarda."
+      },
+      "sequence": {
+        "ok": "Secuencia de puntos coherente ({{count}} puntos).",
+        "incomplete": "Secuencia incompleta: con los datos introducidos se llega a {{score}} ({{count}} puntos).",
+        "decreasing": "Los puntos al cambio de un equipo no pueden bajar: revísalo.",
+        "leftover": "Sobran puntos al cambio: no cuadran con el final del set.",
+        "final_mismatch": "La secuencia acaba {{score}}, que no coincide con el resultado introducido.",
+        "no_first_serve": "Falta el primer saque."
       }
     },
     "suggest": {
@@ -951,6 +959,17 @@
         "notation": "La notación de texto del archivo tiene errores ({{detail}}).",
         "entries": "Hay una entrada no válida en el archivo (n.º {{detail}})."
       }
+    },
+    "acta": {
+      "lineupFromActa": "Formación y primer saque tomados del acta (Análisis asistido). Revísalos y los líberos antes de empezar.",
+      "unknownPlayers": "Estos dorsales del acta no están en la convocatoria (o están como líbero): {{list}}.",
+      "useActaLineup": "Usa la formación del acta",
+      "fixDiffers": "La formación o el primer saque de este set no coinciden con el acta.",
+      "expected": "Acta · punto {{n}} ({{score}}): saca {{server}} (n.º {{player}}) · lo gana {{winner}}.",
+      "serverMismatch": "En el partido codificado saca el otro equipo: revisa los puntos anteriores.",
+      "diverged": "La codificación del set {{set}} no coincide con el acta desde el punto {{n}} ({{score}}), que según el acta gana {{winner}}. Revísalo en Análisis asistido → Verificación con el acta.",
+      "expectedPoint": "Según el acta, este punto lo gana este equipo.",
+      "againstActa": "Según el acta, este punto lo gana {{team}}."
     }
   }
 }

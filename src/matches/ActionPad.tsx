@@ -33,6 +33,8 @@ interface Props {
   send: (ev: MatchEventData) => Promise<boolean>;
   // Proposta de la següent acció (anàlisi assistida); null = desactivat
   suggestion?: Suggestion | null;
+  // Equip que guanya aquest punt segons l'acta (si se sap)
+  expectedWinner?: Side | null;
 }
 
 const ZONES_KEY = 'svidia.zonesMode';
@@ -46,7 +48,7 @@ function readZonesMode(): boolean {
 }
 
 // Panell tàctil: jugador (tocant el camp) → fonament → [tipus] → qualificació → [origen i destinació]
-export function ActionPad({ state, selection, setSelection, names, colors, players, flipped, send, suggestion }: Props) {
+export function ActionPad({ state, selection, setSelection, names, colors, players, flipped, send, suggestion, expectedWinner }: Props) {
   const { t } = useTranslation();
   const [skill, setSkill] = useState<Skill | null>(null);
   const [skillType, setSkillType] = useState<SkillType | null>(null);
@@ -211,7 +213,8 @@ export function ActionPad({ state, selection, setSelection, names, colors, playe
             return (
               <button
                 key={ev}
-                className={`ap-eval ${pending === ev ? 'on' : ''} ${w ? (w === selection?.side ? 'win' : 'lose') : ''}`}
+                className={`ap-eval ${pending === ev ? 'on' : ''} ${w ? (w === selection?.side ? 'win' : 'lose') : ''} ${w && expectedWinner && w !== expectedWinner ? 'acta-against' : ''}`}
+                title={w && expectedWinner && w !== expectedWinner ? t('recognition.acta.againstActa', { team: names[expectedWinner] }) : undefined}
                 onClick={() => chooseEval(ev)}
                 disabled={!!pending && pending !== ev}
               >
