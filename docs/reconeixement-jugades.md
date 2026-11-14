@@ -285,6 +285,10 @@ Cada etapa es fusiona a `main` només quan està provada i no afecta el funciona
 ## 13. Preguntes obertes
 
 1. El consentiment d'imatge cobreix també els jugadors rivals per a ús intern d'entrenament (§9)?
-2. Sistema operatiu de l'ordinador amb la RTX 3070 (Windows o Linux)?
-3. Es grava sempre des del mateix costat de la pista o depèn del pavelló?
-4. Es vol que l'eina local es pugui llançar des de l'app d'escriptori, o n'hi ha prou amb executar-la a part?
+   Sí, no hi ha problemes amb el consentiment d'imatge
+3. Sistema operatiu de l'ordinador amb la RTX 3070 (Windows o Linux)?
+   Windows 11
+5. Es grava sempre des del mateix costat de la pista o depèn del pavelló?
+   Depèn del pavelló
+7. Es vol que l'eina local es pugui llançar des de l'app d'escriptori, o n'hi ha prou amb executar-la a part?
+   No ho sé. El que sigui més efectiu.
