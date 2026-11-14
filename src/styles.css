@@ -772,3 +772,19 @@ input.search { max-width: 260px; }
 .rec-sheet-pos { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 0.75rem; color: var(--muted); font-weight: 700; }
 .rec-sheet-pos .num-input { width: 52px; padding: 6px 4px; font-size: 1rem; color: var(--text); }
 .rec-final .num-input { width: 64px; }
+.badge.rec-src-team { background: color-mix(in srgb, var(--ok) 15%, var(--surface)); color: var(--ok); }
+.badge.rec-src-club { background: color-mix(in srgb, var(--brand) 14%, var(--surface)); color: var(--brand); }
+.badge.rec-src-template { background: color-mix(in srgb, var(--warn) 15%, var(--surface)); color: var(--warn); }
+.rec-sheet-layout.with-viewer { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 1000px) { .rec-sheet-layout.with-viewer { grid-template-columns: 1fr; } }
+.rec-sheet-layout.with-viewer .rec-sheet-sets { grid-template-columns: 1fr; }
+.rec-sheet-viewer-col { position: sticky; top: 8px; }
+.rec-viewer-tools { gap: 6px; }
+.rec-viewer-close { margin-left: auto; }
+.rec-viewer-frame { overflow: auto; max-height: calc(100vh - 140px); border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); }
+.rec-viewer-page { display: block; max-width: none; height: auto; }
+/* Suggeriments (etapa 0.2) */
+.ap-suggest { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ap-suggest-chip { display: inline-flex; gap: 6px; align-items: baseline; border-left: 4px solid var(--team, var(--brand)); }
+.ap-suggest-chip.alt { opacity: 0.85; border-style: dashed; border-left-style: solid; }
+.ap-suggest-chip .muted-on { opacity: 0.75; }

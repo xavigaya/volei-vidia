@@ -105,6 +105,14 @@ Per fer-ho servir en un pavelló sense cobertura: obre el partit abans de sortir
 - **Sistema de joc** de cada equip a cada set (5-1 en dos ordres, 6-2 i 4-2), deduït de la formació inicial i de les posicions de la convocatòria, amb avís si no hi coincideixen. Les rotacions es numeren P1–P6 per la posició del col·locador.
 - **Sistema de recepció** per equip i sistema de joc: plantilles de 2, 3, 4 o 5 receptors calculades per a cada rotació, editor visual (arrossegar i tocar per marcar receptors, també amb teclat), comprovació de faltes de posició i notació de text (`P1: S@1x MB1@4x OPP@2x OH1@7* L@8* OH2@9*`).
 - **Verificació amb l'acta oficial**: primer servei, formacions, punts a cada canvi de servei, resultat i durada de cada set; llista de diferències amb el partit codificat.
+- **Recepció per defecte del club**: la recepció d'un equip es pot aplicar a tots els partits (migració `0015_reception_defaults.sql`).
+- **Acta**: visor de la foto o el PDF al costat del formulari (girar, ampliar) i importació de les dades en JSON.
+
+**Reconeixement de jugades — Etapa 0.2**
+
+- **Suggeriments per lògica de joc** a la pantalla de codificació: es proposa la següent acció (servei, recepció, col·locació, atac, bloqueig, defensa) amb els jugadors més probables segons la rotació, el sistema de joc i el de recepció.
+- Teclat: amb la línia buida, escriu només la qualificació (`+`, `#16`…) i Retorn, o Tab per omplir el codi proposat. Tauleta: un toc a la proposta tria jugador i fonament.
+- Es poden desactivar amb la casella *Suggeriments*.
 
 ## Tecnologia
 

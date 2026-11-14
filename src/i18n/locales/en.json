@@ -872,7 +872,17 @@
         "label": "Line {{line}}: unknown role for this system (“{{text}}”).",
         "zone": "Line {{line}}: invalid zone (“{{text}}”).",
         "duplicate": "Line {{line}}: repeated role (“{{text}}”)."
-      }
+      },
+      "source": {
+        "team": "Team reception",
+        "club": "Club default",
+        "template": "Template"
+      },
+      "makeDefault": "Use as default for all matches",
+      "defaultHelp": "Saves this reception for the team and applies it, for this game system, to every team and match in the club that has none of its own.",
+      "defaultConfirm": "{{team}}'s reception ({{system}}) will become the default for every team and match in the club that has none of its own. Continue?",
+      "defaultSaved": "Saved as the club default reception.",
+      "defaultMigration": "To save the default reception, run the migration supabase/migrations/0015_reception_defaults.sql."
     },
     "sheet": {
       "help": "Enter the official scoresheet data. Points at side-out are the team's score each time it loses the serve, in order (the boxes under each server). Differences with the coded match appear above.",
@@ -897,7 +907,33 @@
         "lineup": "Set {{set}}, {{team}}, position {{pos}}: scoresheet has {{expected}}; coded match has {{actual}}.",
         "serve_loss": "Set {{set}}, {{team}}, loss of serve #{{n}}: scoresheet {{expected}}; coded match {{actual}}.",
         "final": "Set {{set}}: scoresheet {{expected}}; coded match {{actual}}."
+      },
+      "viewer": {
+        "open": "Open scoresheet (PDF or image)",
+        "change": "Change file",
+        "rotateLeft": "Rotate left",
+        "rotateRight": "Rotate right",
+        "zoomIn": "Zoom in",
+        "zoomOut": "Zoom out",
+        "unsupported": "Unsupported format: choose a PDF or an image (JPG, PNG…).",
+        "help": "Open the scoresheet photo or PDF to see it next to the form while you transcribe it. The file is not uploaded anywhere: it is only shown on this device. Automatic reading of handwritten scoresheets will be done by the local analysis tool; for now you can import its data as JSON."
+      },
+      "import": {
+        "button": "Import data (JSON)",
+        "help": "Imports scoresheet data read by another program (JSON format described in docs/reconeixement-jugades.md).",
+        "json": "The file is not valid JSON.",
+        "no_sets": "The file contains no sets.",
+        "set_number": "There is an invalid set number.",
+        "replace": "There is already scoresheet data. Replace it with the file's?",
+        "done_one": "{{count}} set imported. Review it and save.",
+        "done_other": "{{count}} sets imported. Review them and save."
       }
+    },
+    "suggest": {
+      "title": "Suggested:",
+      "placeholder": "{{code}} … type the grade (+, #, -…) or Tab to complete",
+      "toggle": "Suggestions",
+      "toggleHelp": "Suggests the next action from game logic, the game system and the reception system. With the command line empty, type only the grade (e.g. + or #16) or press Tab to fill in the suggested code."
     }
   }
 }

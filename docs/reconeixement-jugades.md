@@ -1,6 +1,6 @@
 # Reconeixement de jugades a partir del vídeo — Document de disseny
 
-> Branca: `reconeixement-jugades` · Estat: **etapa 0.1 feta** (sistemes de joc, recepció i verificació amb l'acta) · Data: novembre 2026
+> Branca: `reconeixement-jugades` · Estat: **etapes 0.1 i 0.2 fetes** (sistemes de joc, recepció, verificació amb l'acta i suggeriments) · Data: novembre 2026
 
 ## 1. Objectiu
 
@@ -87,6 +87,7 @@ Amb els punts 1, s'obté la transformació de la imatge a metres del camp (homog
   ```
 
 - Es desen per equip i sistema de joc, i es reutilitzen en altres partits.
+- **Recepció per defecte del club**: la recepció d'un equip es pot fer servir per defecte a tots els partits (botó *Fes-la servir per defecte a tots els partits*). Ordre d'aplicació: recepció de l'equip → per defecte del club → plantilla.
 
 Si no s'introdueix, el sistema fa servir la plantilla per defecte del sistema de joc. A partir de la fase 2 podrà proposar la formació real que ha observat al vídeo (§7.3).
 
@@ -98,6 +99,22 @@ Per assegurar que els partits que serviran per entrenar estan ben codificats, es
 - per equip: els **punts al canvi de servei** (el marcador propi cada vegada que perd el servei, en ordre).
 
 L'app llista les diferències (p. ex. *«Set 2, equip local, canvi de servei núm. 5: a l'acta 14; al partit codificat 13»*). L'acta no indica les entrades i sortides del líbero; l'app ja les dedueix.
+
+**Importació de l'acta:**
+
+- Es pot obrir la foto o el PDF de l'acta al costat del formulari (girar, ampliar, canviar de pàgina) per transcriure-la. El fitxer no es puja enlloc.
+- Les dades es poden importar en JSON, el format que farà servir el lector automàtic:
+
+  ```json
+  { "sets": [ { "number": 1, "firstServe": "H",
+                "home": { "lineup": [2, 7, 12, 9, 4, 13], "serveLoss": [2, 4, 8] },
+                "away": { "lineup": [11, 5, 10, 6, 1, 3], "serveLoss": [2, 3, 5] },
+                "final": { "h": 25, "a": 17 }, "start": "10:00", "end": "10:23" } ],
+    "notes": "" }
+  ```
+
+  `H` és l'equip local i `A` el visitant (no l'equip A/B de l'acta, que es decideix per sorteig).
+- **Lectura automàtica de l'acta escrita a mà**: un OCR convencional no llegeix bé la lletra a mà dins les caselles. Per mantenir el cost zero, es farà amb un model de visió local a l'eina `vidia-vision` (RTX 3070), que generarà aquest JSON per revisar-lo i importar-lo. És una tasca de la fase 1.
 
 ### 3.4 Per què són importants
 
@@ -156,6 +173,13 @@ Funcionament a la interfície:
 - Funciona sense vídeo i també en directe.
 
 Criteri d'èxit: reduir de manera apreciable el nombre de tecles per acció en un partit de prova, sense errors nous de codificació.
+
+**Implementació (etapa 0.2, `src/recognition/suggest.ts`):**
+
+- Teclat: amb la línia d'ordres buida, la proposta apareix com a text d'ajuda. N'hi ha prou d'escriure la qualificació (`+`, `#`, `-`…, amb zones opcionals: `#16`) i Retorn; o Tab per omplir el codi proposat (`a7R`) i completar-lo.
+- Tauleta: a sobre dels fonaments surten fins a tres jugadors candidats per a l'acció proposada i una alternativa per a cada acció possible (p. ex. defensa o bloqueig després d'un atac); un toc tria jugador i fonament, i només queda la qualificació.
+- Receptor: el de la recepció definida que és més a prop de la zona on cau el servei (si s'ha marcat). Col·locació: el col·locador de la rotació (o el líbero / oposat si ha fet el primer toc). Atac: segons la zona o el tipus de col·locació (ràpida → central). Bloqueig: el jugador de davant de la zona d'atac.
+- Casella *Suggeriments* a la barra d'ordres (es recorda en cada dispositiu); desactivada, la pantalla de codificació funciona exactament com abans.
 
 ## 6. Fase 1 — Detecció de contactes i trajectòries (models preentrenats)
 
@@ -258,6 +282,7 @@ Canvis mínims al codi existent: un punt d'entrada a la pàgina del partit (`Mat
 - `match_team_systems` *(fet, etapa 0.1)*: sistema de joc i col·locador de referència per partit, equip i set.
 - `team_reception_systems` *(fet, etapa 0.1)*: sistemes de recepció guardats per equip i sistema de joc.
 - `match_scoresheets` *(fet, etapa 0.1)*: dades de l'acta oficial per a la verificació.
+- `club_reception_defaults` *(fet, migració `0015_reception_defaults.sql`)*: recepció per defecte del club per a cada sistema de joc.
 - `video_calibrations`: punts de calibració per partit / tram de vídeo i costat de cada equip per set.
 - `action_proposals`: propostes pendents de revisar (partit, jugada, temps, acció proposada, confiança, estat: pendent / acceptada / corregida / rebutjada, versió del model).
 
@@ -298,7 +323,7 @@ Tots dos en JSON amb número de versió del format.
 | Etapa | Contingut | Resultat |
 |---|---|---|
 | 0.1 ✅ | Sistemes de joc, plantilles de recepció i verificació amb l'acta (pestanya *Anàlisi assistida*) | Dades del §3 introduïbles i desades |
-| 0.2 | Suggeriments per lògica de joc | Codificació manual més ràpida |
+| 0.2 ✅ | Suggeriments per lògica de joc | Codificació manual més ràpida |
 | 1.1 | Eina de calibració de pista i xarxa | Homografia i alçada de xarxa per vídeo |
 | 1.2 | `vidia-vision`: detecció de jugadors, pilota i àudio | Contactes i jugades detectats |
 | 1.3 | Reajust automàtic dels temps del partit ja codificat | Primeres dades d'entrenament precises |

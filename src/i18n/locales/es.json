@@ -872,7 +872,17 @@
         "label": "Línea {{line}}: rol desconocido para este sistema («{{text}}»).",
         "zone": "Línea {{line}}: zona no válida («{{text}}»).",
         "duplicate": "Línea {{line}}: rol repetido («{{text}}»)."
-      }
+      },
+      "source": {
+        "team": "Recepción del equipo",
+        "club": "Por defecto del club",
+        "template": "Plantilla"
+      },
+      "makeDefault": "Úsala por defecto en todos los partidos",
+      "defaultHelp": "Guarda esta recepción en el equipo y la aplica, para este sistema de juego, a todos los equipos y partidos del club que no tengan una propia.",
+      "defaultConfirm": "La recepción de {{team}} ({{system}}) pasará a ser la predeterminada para todos los equipos y partidos del club que no tengan una propia. ¿Quieres continuar?",
+      "defaultSaved": "Guardada como recepción por defecto del club.",
+      "defaultMigration": "Para guardar la recepción por defecto hay que ejecutar la migración supabase/migrations/0015_reception_defaults.sql."
     },
     "sheet": {
       "help": "Introduce los datos del acta oficial. Los puntos al cambio son el marcador del equipo cada vez que pierde el saque, en orden (las casillas bajo cada sacador). Las diferencias con el partido codificado aparecen arriba.",
@@ -897,7 +907,33 @@
         "lineup": "Set {{set}}, {{team}}, posición {{pos}}: en el acta está el {{expected}}; en el partido codificado, el {{actual}}.",
         "serve_loss": "Set {{set}}, {{team}}, cambio de saque n.º {{n}}: en el acta {{expected}}; en el partido codificado {{actual}}.",
         "final": "Set {{set}}: en el acta {{expected}}; en el partido codificado {{actual}}."
+      },
+      "viewer": {
+        "open": "Abre el acta (PDF o imagen)",
+        "change": "Cambia el archivo",
+        "rotateLeft": "Gira a la izquierda",
+        "rotateRight": "Gira a la derecha",
+        "zoomIn": "Amplía",
+        "zoomOut": "Reduce",
+        "unsupported": "Formato no admitido: elige un PDF o una imagen (JPG, PNG…).",
+        "help": "Abre la foto o el PDF del acta para verla junto al formulario mientras la transcribes. El archivo no se sube a ningún sitio: solo se muestra en este dispositivo. La lectura automática del acta escrita a mano la hará la herramienta local de análisis; de momento puedes importar sus datos en JSON."
+      },
+      "import": {
+        "button": "Importa datos (JSON)",
+        "help": "Importa los datos del acta leídos por otro programa (formato JSON descrito en docs/reconeixement-jugades.md).",
+        "json": "El archivo no es un JSON válido.",
+        "no_sets": "El archivo no contiene ningún set.",
+        "set_number": "Hay un número de set no válido.",
+        "replace": "Ya hay datos del acta. ¿Quieres sustituirlos por los del archivo?",
+        "done_one": "Se ha importado {{count}} set. Revísalo y guarda.",
+        "done_other": "Se han importado {{count}} sets. Revísalos y guarda."
       }
+    },
+    "suggest": {
+      "title": "Propuesta:",
+      "placeholder": "{{code}} … escribe la calificación (+, #, -…) o Tab para completar",
+      "toggle": "Sugerencias",
+      "toggleHelp": "Propone la siguiente acción según la lógica del juego, el sistema de juego y el de recepción. Con la línea de órdenes vacía, escribe solo la calificación (p. ej. + o #16) o pulsa Tab para rellenar el código propuesto."
     }
   }
 }

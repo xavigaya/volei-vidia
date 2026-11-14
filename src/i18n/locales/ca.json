@@ -872,7 +872,17 @@
         "label": "Línia {{line}}: rol desconegut per a aquest sistema («{{text}}»).",
         "zone": "Línia {{line}}: zona no vàlida («{{text}}»).",
         "duplicate": "Línia {{line}}: rol repetit («{{text}}»)."
-      }
+      },
+      "source": {
+        "team": "Recepció de l'equip",
+        "club": "Per defecte del club",
+        "template": "Plantilla"
+      },
+      "makeDefault": "Fes-la servir per defecte a tots els partits",
+      "defaultHelp": "Desa aquesta recepció a l'equip i l'aplica, per a aquest sistema de joc, a tots els equips i partits del club que no en tinguin una de pròpia.",
+      "defaultConfirm": "La recepció de {{team}} ({{system}}) passarà a ser la predeterminada per a tots els equips i partits del club que no en tinguin una de pròpia. Vols continuar?",
+      "defaultSaved": "Desada com a recepció per defecte del club.",
+      "defaultMigration": "Per desar la recepció per defecte cal executar la migració supabase/migrations/0015_reception_defaults.sql."
     },
     "sheet": {
       "help": "Entra les dades de l'acta oficial. Els punts al canvi són el marcador de l'equip cada vegada que perd el servei, en ordre (les caselles de sota de cada servidor). Les diferències amb el partit codificat apareixen a dalt.",
@@ -897,7 +907,33 @@
         "lineup": "Set {{set}}, {{team}}, posició {{pos}}: a l'acta hi ha el {{expected}}; al partit codificat, el {{actual}}.",
         "serve_loss": "Set {{set}}, {{team}}, canvi de servei núm. {{n}}: a l'acta {{expected}}; al partit codificat {{actual}}.",
         "final": "Set {{set}}: a l'acta {{expected}}; al partit codificat {{actual}}."
+      },
+      "viewer": {
+        "open": "Obre l'acta (PDF o imatge)",
+        "change": "Canvia el fitxer",
+        "rotateLeft": "Gira a l'esquerra",
+        "rotateRight": "Gira a la dreta",
+        "zoomIn": "Amplia",
+        "zoomOut": "Redueix",
+        "unsupported": "Format no admès: tria un PDF o una imatge (JPG, PNG…).",
+        "help": "Obre la foto o el PDF de l'acta per veure-la al costat del formulari mentre la transcrius. El fitxer no es puja enlloc: només es mostra en aquest dispositiu. La lectura automàtica de l'acta escrita a mà la farà l'eina local d'anàlisi; de moment pots importar-ne les dades en JSON."
+      },
+      "import": {
+        "button": "Importa dades (JSON)",
+        "help": "Importa les dades de l'acta llegides per un altre programa (format JSON descrit a docs/reconeixement-jugades.md).",
+        "json": "El fitxer no és un JSON vàlid.",
+        "no_sets": "El fitxer no conté cap set.",
+        "set_number": "Hi ha un número de set no vàlid.",
+        "replace": "Ja hi ha dades de l'acta. Les vols substituir per les del fitxer?",
+        "done_one": "S'ha importat {{count}} set. Revisa'l i desa.",
+        "done_other": "S'han importat {{count}} sets. Revisa'ls i desa."
       }
+    },
+    "suggest": {
+      "title": "Proposta:",
+      "placeholder": "{{code}} … escriu la qualificació (+, #, -…) o Tab per completar",
+      "toggle": "Suggeriments",
+      "toggleHelp": "Proposa la següent acció segons la lògica del joc, el sistema de joc i el de recepció. Amb la línia d'ordres buida, escriu només la qualificació (p. ex. + o #16) o prem Tab per omplir el codi proposat."
     }
   }
 }

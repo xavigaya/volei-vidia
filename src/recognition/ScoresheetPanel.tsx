@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Side } from '../engine/match';
 import type { SideCode } from '../lib/types';
@@ -10,11 +10,13 @@ import {
   durationMinutes,
   emptySet,
   parseNumberList,
+  parseScoresheetJson,
   type Diff,
   type Scoresheet,
   type ScoresheetSet,
 } from './scoresheet';
 import type { UseRecognition } from './useRecognition';
+import { ScoresheetViewer } from './ScoresheetViewer';
 
 interface Props {
   m: UseMatch;
@@ -38,9 +40,9 @@ export function ScoresheetPanel({ m, r, canEdit }: Props) {
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [viewer, setViewer] = useState(false);
 
-  useEffect(() => {
-    const s = initialSheet(r.scoresheet, maxSets);
+  function loadSheet(s: Scoresheet) {
     setSheet(s);
     const txt: Record<string, string> = {};
     for (const set of s.sets) {
@@ -48,8 +50,27 @@ export function ScoresheetPanel({ m, r, canEdit }: Props) {
       txt[`A${set.number}`] = set.away.serveLoss.join(' ');
     }
     setLossText(txt);
+  }
+
+  useEffect(() => {
+    loadSheet(initialSheet(r.scoresheet, maxSets));
     setDirty(false);
   }, [r.scoresheet, maxSets]);
+
+  async function onImportJson(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    const res = parseScoresheetJson(await file.text(), maxSets);
+    if (!res.ok) {
+      setMsg({ ok: false, text: t(`recognition.sheet.import.${res.error}`) });
+      return;
+    }
+    if (filled && !window.confirm(t('recognition.sheet.import.replace'))) return;
+    loadSheet(initialSheet(res.sheet, maxSets));
+    setDirty(true);
+    setMsg({ ok: true, text: t('recognition.sheet.import.done', { count: res.sheet.sets.length }) });
+  }
 
   const rosters = useMemo(() => {
     const H = m.players.filter((p) => p.side === 'H').map((p) => p.shirt_number);
@@ -92,8 +113,27 @@ export function ScoresheetPanel({ m, r, canEdit }: Props) {
     });
 
   return (
+    <div className={`rec-sheet-layout ${viewer ? 'with-viewer' : ''}`}>
+      {viewer && (
+        <div className="rec-sheet-viewer-col">
+          <ScoresheetViewer onClose={() => setViewer(false)} />
+        </div>
+      )}
     <div className="stack">
       <p className="muted small">{t('recognition.sheet.help')}</p>
+      <div className="row wrap">
+        {!viewer && (
+          <button className="btn btn-sm" onClick={() => setViewer(true)}>
+            {t('recognition.sheet.viewer.open')}
+          </button>
+        )}
+        {canEdit && (
+          <label className="btn btn-sm" title={t('recognition.sheet.import.help')}>
+            {t('recognition.sheet.import.button')}
+            <input type="file" accept="application/json,.json" hidden onChange={(e) => void onImportJson(e)} />
+          </label>
+        )}
+      </div>
 
       <div className={`card rec-result ${filled ? (diffs.length ? 'has-diffs' : 'all-ok') : ''}`} aria-live="polite">
         {!filled ? (
@@ -240,6 +280,8 @@ export function ScoresheetPanel({ m, r, canEdit }: Props) {
           {msg && <span className={msg.ok ? 'ok' : 'warn-text'}>{msg.text}</span>}
         </div>
       )}
+      {!canEdit && msg && <span className={msg.ok ? 'ok' : 'warn-text'}>{msg.text}</span>}
+    </div>
     </div>
   );
 }

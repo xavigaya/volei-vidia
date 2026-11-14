@@ -28,6 +28,8 @@ import type { PlayerHandle, VideoSource } from '../video/VideoPlayer';
 import { formatTime } from '../video/youtube';
 import { paramToFilter } from '../video/clips';
 import { readAutoPause, writeAutoPause, type AutoPause } from '../video/autoPause';
+import { useSuggestion } from '../recognition/useSuggestion';
+import { EVAL_ONLY, suggestionPrefix } from '../recognition/suggest';
 
 const SIDES: Side[] = ['H', 'A'];
 
@@ -136,6 +138,10 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
   }, [m.players]);
 
   const canCode = m.canCode;
+  // Suggeriments per lògica de joc (anàlisi assistida)
+  const sugg = useSuggestion(m, active && canCode);
+  const suggestion = canCode ? sugg.suggestion : null;
+  const suggestedCode = suggestion ? suggestionPrefix(suggestion.primary) : '';
   const inPlay = state.phase === 'in_play';
   const nextSet = state.currentSet + 1;
 
@@ -190,7 +196,9 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
 
   async function onCommand(e: FormEvent) {
     e.preventDefault();
-    const r = parseCommand(command);
+    // Només la qualificació (i zones): s'aplica a la proposta ("+" → "a7R+")
+    const input = suggestedCode && EVAL_ONLY.test(command.trim()) ? suggestedCode + command.trim() : command;
+    const r = parseCommand(input);
     if (!r.ok) {
       if (r.error !== 'empty') setMessage({ kind: 'error', text: `${t(`live.cmd.${r.error}`)} (${r.token})` });
       return;
@@ -199,7 +207,7 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
       const ok = await send((st) => (ev.type === 'partial_action' ? resolveAction(st, ev) : ev));
       if (!ok) {
         // Es deixa a la línia només el que no s'ha pogut desar
-        setCommand(command.trim().split(/\s+/).slice(r.events.indexOf(ev)).join(' '));
+        setCommand(input.trim().split(/\s+/).slice(r.events.indexOf(ev)).join(' '));
         return;
       }
     }
@@ -327,6 +335,7 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
           players={playerMaps}
           flipped={flip}
           send={send}
+          suggestion={suggestion}
         />
       )}
 
@@ -372,10 +381,16 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
               onChange={(e) => setCommand(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Escape') setCommand('');
+                // Tab amb la línia buida: omple la proposta per completar-la
+                if (e.key === 'Tab' && !e.shiftKey && !command && suggestedCode) {
+                  e.preventDefault();
+                  setCommand(suggestedCode);
+                  return;
+                }
                 // Les dreceres amb Ctrl (vídeo, desfer) no compten com a escriure
                 if (!e.ctrlKey && !e.metaKey && !e.altKey) onTyping();
               }}
-              placeholder={t('live.cmdPlaceholder')}
+              placeholder={suggestedCode ? t('recognition.suggest.placeholder', { code: suggestedCode }) : t('live.cmdPlaceholder')}
               aria-label={t('live.cmdLabel')}
               autoComplete="off"
               autoCapitalize="off"
@@ -397,6 +412,10 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
             <button className="btn" onClick={() => void m.undo()} disabled={m.events.length === 0} title="Ctrl+Z">
               ↶ {t('live.undo')}
             </button>
+            <label className="check small" title={t('recognition.suggest.toggleHelp')}>
+              <input type="checkbox" checked={sugg.enabled} onChange={(e) => sugg.setEnabled(e.target.checked)} />
+              {t('recognition.suggest.toggle')}
+            </label>
             <button className="btn cmd-help" onClick={() => setLegendOpen(true)}>
               {t('legend.title')}
             </button>

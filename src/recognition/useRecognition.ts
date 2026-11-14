@@ -14,7 +14,7 @@ interface SystemRow {
 }
 
 interface ReceptionRow {
-  team_id: string;
+  team_id: string | null; // null = recepció per defecte del club
   system: string;
   template: string;
   has_libero: boolean;
@@ -45,16 +45,19 @@ export function useRecognition(m: UseMatch) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [missingMigration, setMissingMigration] = useState(false);
+  // La migració 0015 (recepció per defecte del club) és opcional
+  const [defaultsAvailable, setDefaultsAvailable] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [sys, rec, sheet] = await Promise.all([
+    const [sys, rec, sheet, defs] = await Promise.all([
       supabase.from('match_team_systems').select('side, set_number, system, anchor').eq('match_id', match.id),
       supabase
         .from('team_reception_systems')
         .select('team_id, system, template, has_libero, rotations')
         .in('team_id', [match.home_team_id, match.away_team_id]),
       supabase.from('match_scoresheets').select('data').eq('match_id', match.id).maybeSingle(),
+      supabase.from('club_reception_defaults').select('system, template, has_libero, rotations').eq('club_id', match.club_id),
     ]);
     const firstError = sys.error ?? rec.error ?? sheet.error;
     if (firstError) {
@@ -66,11 +69,13 @@ export function useRecognition(m: UseMatch) {
         if (isSystemCode(r.system)) map.set(key(r.side, r.set_number), { code: r.system, anchor: r.anchor });
       }
       setSystems(map);
-      setReceptions((rec.data ?? []) as ReceptionRow[]);
+      const defaults = defs.error ? [] : ((defs.data ?? []) as Omit<ReceptionRow, 'team_id'>[]).map((d) => ({ ...d, team_id: null }));
+      setDefaultsAvailable(!defs.error);
+      setReceptions([...((rec.data ?? []) as ReceptionRow[]), ...defaults]);
       setScoresheet(((sheet.data as { data: Scoresheet } | null)?.data as Scoresheet) ?? null);
     }
     setLoading(false);
-  }, [match.id, match.home_team_id, match.away_team_id]);
+  }, [match.id, match.club_id, match.home_team_id, match.away_team_id]);
 
   useEffect(() => {
     void load();
@@ -116,10 +121,13 @@ export function useRecognition(m: UseMatch) {
 
   const teamOf = useCallback((side: SideCode) => (side === 'H' ? match.home_team_id : match.away_team_id), [match]);
 
-  // Sistema de recepció desat (o nou, amb la plantilla R3) d'un equip
+  // Sistema de recepció d'un equip: el seu, si no el per defecte del club i,
+  // si no n'hi ha cap, la plantilla R3
   const receptionFor = useCallback(
     (side: SideCode, code: SystemCode, hasLibero: boolean): ReceptionSystem => {
-      const row = receptions.find((r) => r.team_id === teamOf(side) && r.system === code);
+      const row =
+        receptions.find((r) => r.team_id === teamOf(side) && r.system === code) ??
+        receptions.find((r) => r.team_id === null && r.system === code);
       if (!row) return newReceptionSystem(code, 'R3', hasLibero);
       return {
         system: code,
@@ -127,6 +135,16 @@ export function useRecognition(m: UseMatch) {
         hasLibero: row.has_libero,
         rotations: row.rotations ?? {},
       };
+    },
+    [receptions, teamOf],
+  );
+
+  // D'on surt la recepció que es mostra
+  const receptionSource = useCallback(
+    (side: SideCode, code: SystemCode): 'team' | 'club' | 'template' => {
+      if (receptions.some((r) => r.team_id === teamOf(side) && r.system === code)) return 'team';
+      if (receptions.some((r) => r.team_id === null && r.system === code)) return 'club';
+      return 'template';
     },
     [receptions, teamOf],
   );
@@ -153,6 +171,25 @@ export function useRecognition(m: UseMatch) {
     [teamOf, match.club_id, load],
   );
 
+  // Fa servir aquesta recepció per defecte a tots els equips i partits del club
+  const saveClubDefault = useCallback(
+    async (side: SideCode, rs: ReceptionSystem) => {
+      const { error: e } = await supabase.from('club_reception_defaults').upsert({
+        club_id: match.club_id,
+        system: rs.system,
+        template: rs.template,
+        has_libero: rs.hasLibero,
+        rotations: rs.rotations,
+        source_team_id: teamOf(side),
+        source_match_id: match.id,
+      });
+      if (e) return isMissingTable(e.message) ? 'missing_migration_0015' : e.message;
+      await load();
+      return null;
+    },
+    [match.club_id, match.id, teamOf, load],
+  );
+
   const saveScoresheet = useCallback(
     async (data: Scoresheet) => {
       const { error: e } = await supabase
@@ -172,7 +209,11 @@ export function useRecognition(m: UseMatch) {
     setSystemsList,
     saveSystems,
     receptionFor,
+    receptionSource,
     isReceptionSaved,
+    saveClubDefault,
+    defaultsAvailable,
+    reload: load,
     saveReception,
     scoresheet,
     saveScoresheet,

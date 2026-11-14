@@ -183,7 +183,20 @@ export function ReceptionPanel({ m, r, canEdit }: Props) {
     if (!err) setDirty(false);
   }
 
+  // Desa la recepció a l'equip i la fa servir per defecte a tots els partits del club
+  async function saveAsDefault() {
+    if (!window.confirm(t('recognition.reception.defaultConfirm', { team: teamName(side), system: code }))) return;
+    setBusy(true);
+    let err = dirty || !r.isReceptionSaved(side, code) ? await r.saveReception(side, rs) : null;
+    if (!err) err = await r.saveClubDefault(side, rs);
+    setBusy(false);
+    if (err === 'missing_migration_0015') err = t('recognition.reception.defaultMigration');
+    setMsg(err ? { ok: false, text: err } : { ok: true, text: t('recognition.reception.defaultSaved') });
+    if (!err) setDirty(false);
+  }
+
   const teamName = (s: SideCode) => (s === 'H' ? match.home.name : match.away.name);
+  const source = r.receptionSource(side, code);
 
   return (
     <div className="stack">
@@ -235,7 +248,7 @@ export function ReceptionPanel({ m, r, canEdit }: Props) {
           />
           {t('recognition.reception.withLibero')}
         </label>
-        {!r.isReceptionSaved(side, code) && <span className="badge rec-proposed">{t('recognition.status.proposed')}</span>}
+        <span className={`badge rec-src-${source}`}>{t(`recognition.reception.source.${source}`)}</span>
       </div>
 
       <div className="segmented rec-rotations" role="tablist" aria-label={t('recognition.reception.rotation')}>
@@ -396,6 +409,9 @@ export function ReceptionPanel({ m, r, canEdit }: Props) {
         <div className="row wrap">
           <button className="btn btn-primary" disabled={busy || (!dirty && r.isReceptionSaved(side, code))} onClick={() => void save()}>
             {t('recognition.reception.save', { team: teamName(side) })}
+          </button>
+          <button className="btn" disabled={busy} onClick={() => void saveAsDefault()} title={t('recognition.reception.defaultHelp')}>
+            {t('recognition.reception.makeDefault')}
           </button>
           {dirty && <span className="muted small">{t('recognition.unsaved')}</span>}
           {msg && <span className={msg.ok ? 'ok' : 'warn-text'}>{msg.text}</span>}

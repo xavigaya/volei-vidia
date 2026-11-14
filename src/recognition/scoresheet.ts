@@ -177,3 +177,53 @@ export function durationMinutes(start?: string | null, end?: string | null): num
   if (a == null || b == null) return null;
   return (b - a + 24 * 60) % (24 * 60);
 }
+
+// ---------------------------------------------------------------------
+// Importació de dades de l'acta en JSON (per a lectors automàtics: l'eina
+// local d'anàlisi o qualsevol altre programa que llegeixi l'acta)
+//
+// { "sets": [ { "number": 1, "firstServe": "H",
+//               "home": { "lineup": [2, 7, 12, 9, 4, 13], "serveLoss": [2, 4, 8] },
+//               "away": { "lineup": [...], "serveLoss": [...] },
+//               "final": { "h": 25, "a": 17 }, "start": "10:00", "end": "10:23" } ],
+//   "notes": "..." }
+// "H" = equip local i "A" = visitant (no confondre amb l'equip A/B de l'acta).
+// ---------------------------------------------------------------------
+export type ImportResult = { ok: true; sheet: Scoresheet } | { ok: false; error: string };
+
+const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 99;
+const time = (v: unknown): string | null => (typeof v === 'string' && /^\d{1,2}[:.h]\d{2}$/.test(v.trim()) ? v.trim().replace(/[.h]/, ':').padStart(5, '0') : null);
+
+export function parseScoresheetJson(text: string, maxSets = 5): ImportResult {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    return { ok: false, error: 'json' };
+  }
+  const obj = raw as { sets?: unknown; notes?: unknown };
+  if (!obj || !Array.isArray(obj.sets)) return { ok: false, error: 'no_sets' };
+  const sets: ScoresheetSet[] = [];
+  for (const item of obj.sets as Record<string, unknown>[]) {
+    const number = item?.number;
+    if (!isNum(number) || number < 1 || number > maxSets) return { ok: false, error: 'set_number' };
+    const team = (v: unknown): ScoresheetTeamSet => {
+      const t = (v ?? {}) as { lineup?: unknown; serveLoss?: unknown };
+      const lineup = Array.isArray(t.lineup) ? t.lineup.slice(0, 6).map((n) => (isNum(n) ? n : null)) : [];
+      while (lineup.length < 6) lineup.push(null);
+      const serveLoss = Array.isArray(t.serveLoss) ? t.serveLoss.filter(isNum) : [];
+      return { lineup, serveLoss };
+    };
+    const final = (item.final ?? {}) as { h?: unknown; a?: unknown };
+    sets.push({
+      number,
+      firstServe: item.firstServe === 'H' || item.firstServe === 'A' ? item.firstServe : null,
+      home: team(item.home),
+      away: team(item.away),
+      final: { h: isNum(final.h) ? final.h : null, a: isNum(final.a) ? final.a : null },
+      start: time(item.start),
+      end: time(item.end),
+    });
+  }
+  return { ok: true, sheet: { sets, notes: typeof obj.notes === 'string' ? obj.notes : null } };
+}

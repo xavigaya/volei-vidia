@@ -200,3 +200,27 @@ describe('acta', () => {
     expect(durationMinutes('23:50', '0:10')).toBe(20);
   });
 });
+
+import { parseScoresheetJson } from './scoresheet';
+
+describe('importació de l\'acta en JSON', () => {
+  it('llegeix les dades i completa el que falta', () => {
+    const r = parseScoresheetJson(
+      JSON.stringify({ sets: [{ number: 2, firstServe: 'A', home: { lineup: [1, 2, 3], serveLoss: [3, 'x', 7] }, final: { h: 25, a: 19 }, start: '10.26' }] }),
+    );
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const s = r.sheet.sets[0];
+    expect(s.home.lineup).toEqual([1, 2, 3, null, null, null]);
+    expect(s.home.serveLoss).toEqual([3, 7]);
+    expect(s.away.serveLoss).toEqual([]);
+    expect(s.start).toBe('10:26');
+    expect(s.final).toEqual({ h: 25, a: 19 });
+  });
+
+  it('rebutja fitxers que no són una acta', () => {
+    expect(parseScoresheetJson('hola')).toEqual({ ok: false, error: 'json' });
+    expect(parseScoresheetJson('{}')).toEqual({ ok: false, error: 'no_sets' });
+    expect(parseScoresheetJson('{"sets":[{"number":9}]}')).toEqual({ ok: false, error: 'set_number' });
+  });
+});
