@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { SideCode } from '../lib/types';
 import type { UseMatch } from '../matches/useMatch';
 import { mismatchesFor, ROMAN, SYSTEM_CODES, SYSTEMS, type SystemCode, type TeamSystem } from './gameSystems';
 import type { UseRecognition } from './useRecognition';
+import { anchorFor, jsonBlob, parseSystemsJson, slug, systemsToJson, type SystemEntry } from './exchange';
+import { saveFile } from '../lib/download';
 
 interface Props {
   m: UseMatch;
@@ -49,6 +51,41 @@ export function SystemsPanel({ m, r, canEdit }: Props) {
       return next;
     });
     setMsg(null);
+  }
+
+  async function onExport() {
+    const entries: SystemEntry[] = r.setSystemsList.flatMap((row) => {
+      const d = draft.get(k(row.side, row.set));
+      return d ? [{ set: row.set, side: row.side, system: d.code, setter: row.lineup[d.anchor] ?? null, anchor: d.anchor }] : [];
+    });
+    const date = match.played_at ? match.played_at.slice(0, 10) : null;
+    await saveFile(
+      `${slug('sistemes', match.home.name, match.away.name, date)}.json`,
+      jsonBlob(systemsToJson(entries, { home: match.home.name, away: match.away.name, date })),
+    ).catch((e: Error) => setMsg({ ok: false, text: e.message }));
+  }
+
+  async function onImport(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    const res = parseSystemsJson(await file.text());
+    if (!res.ok) {
+      setMsg({ ok: false, text: t(`recognition.json.errors.${res.error}`, { detail: res.detail ?? '' }) });
+      return;
+    }
+    const updates: [string, TeamSystem][] = [];
+    for (const entry of res.systems) {
+      const row = r.setSystemsList.find((x) => x.set === entry.set && x.side === entry.side);
+      if (row) updates.push([k(entry.side, entry.set), { code: entry.system, anchor: anchorFor(entry, row.lineup) }]);
+    }
+    const applied = updates.length;
+    setDraft((prev) => {
+      const next = new Map(prev);
+      for (const [key, value] of updates) next.set(key, value);
+      return next;
+    });
+    setMsg({ ok: true, text: t('recognition.json.systemsImported', { count: applied, total: res.systems.length }) });
   }
 
   async function save() {
@@ -159,14 +196,23 @@ export function SystemsPanel({ m, r, canEdit }: Props) {
           </tbody>
         </table>
       </div>
-      {canEdit && (
-        <div className="row wrap">
+      <div className="row wrap">
+        {canEdit && (
           <button className="btn btn-primary" disabled={busy || !dirty} onClick={() => void save()}>
             {t('recognition.systems.save')}
           </button>
-          {msg && <span className={msg.ok ? 'ok' : 'warn-text'}>{msg.text}</span>}
-        </div>
-      )}
+        )}
+        <button className="btn" onClick={() => void onExport()}>
+          {t('recognition.json.export')}
+        </button>
+        {canEdit && (
+          <label className="btn" title={t('recognition.json.systemsImportHelp')}>
+            {t('recognition.json.import')}
+            <input type="file" accept="application/json,.json" hidden onChange={(e) => void onImport(e)} />
+          </label>
+        )}
+        {msg && <span className={msg.ok ? 'ok' : 'warn-text'}>{msg.text}</span>}
+      </div>
     </div>
   );
 }

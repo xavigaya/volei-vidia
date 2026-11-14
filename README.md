@@ -107,6 +107,7 @@ Per fer-ho servir en un pavelló sense cobertura: obre el partit abans de sortir
 - **Verificació amb l'acta oficial**: primer servei, formacions, punts a cada canvi de servei, resultat i durada de cada set; llista de diferències amb el partit codificat.
 - **Recepció per defecte del club**: la recepció d'un equip es pot aplicar a tots els partits (migració `0015_reception_defaults.sql`).
 - **Acta**: visor de la foto o el PDF al costat del formulari (girar, ampliar) i importació de les dades en JSON.
+- **Exportació i importació en JSON** de l'acta, del sistema de recepció i del sistema de joc (formats a `docs/reconeixement-jugades.md`, §3.4).
 
 **Reconeixement de jugades — Etapa 0.2**
 

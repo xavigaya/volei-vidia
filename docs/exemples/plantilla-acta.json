@@ -1,0 +1,70 @@
+{
+  "sets": [
+    {
+      "number": 1,
+      "firstServe": "H",
+      "home": {
+        "lineup": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "serveLoss": [
+          3,
+          7,
+          10,
+          15,
+          18,
+          22,
+          25
+        ]
+      },
+      "away": {
+        "lineup": [
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "serveLoss": [
+          2,
+          5,
+          9,
+          12,
+          16,
+          20
+        ]
+      },
+      "final": {
+        "h": 25,
+        "a": 20
+      },
+      "start": "10:00",
+      "end": "10:24"
+    },
+    {
+      "number": 2,
+      "firstServe": "A",
+      "home": {
+        "lineup": [],
+        "serveLoss": []
+      },
+      "away": {
+        "lineup": [],
+        "serveLoss": []
+      },
+      "final": {
+        "h": null,
+        "a": null
+      },
+      "start": null,
+      "end": null
+    }
+  ],
+  "notes": "Text lliure (opcional)"
+}

@@ -934,6 +934,23 @@
       "placeholder": "{{code}} … escribe la calificación (+, #, -…) o Tab para completar",
       "toggle": "Sugerencias",
       "toggleHelp": "Propone la siguiente acción según la lógica del juego, el sistema de juego y el de recepción. Con la línea de órdenes vacía, escribe solo la calificación (p. ej. + o #16) o pulsa Tab para rellenar el código propuesto."
+    },
+    "json": {
+      "export": "Exporta (JSON)",
+      "import": "Importa (JSON)",
+      "systemsImported": "Se han aplicado {{count}} de {{total}} sistemas del archivo. Revísalos y guarda.",
+      "systemsImportHelp": "Importa sistemas de juego de un archivo JSON. El colocador se busca por el dorsal en la formación de cada set.",
+      "receptionImported": "Recepción importada ({{team}}, {{system}}). Revísala y guárdala para este equipo.",
+      "receptionImportHelp": "Importa un sistema de recepción de un archivo JSON (con coordenadas o solo con la notación de texto).",
+      "replaceUnsaved": "Hay cambios sin guardar. ¿Quieres sustituirlos por los datos del archivo?",
+      "errors": {
+        "json": "El archivo no es un JSON válido.",
+        "format": "El archivo no es de este tipo de datos.",
+        "system": "El sistema de juego del archivo no es válido.",
+        "rotations": "Hay una rotación no válida en el archivo ({{detail}}).",
+        "notation": "La notación de texto del archivo tiene errores ({{detail}}).",
+        "entries": "Hay una entrada no válida en el archivo (n.º {{detail}})."
+      }
     }
   }
 }

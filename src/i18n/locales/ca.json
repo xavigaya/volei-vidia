@@ -934,6 +934,23 @@
       "placeholder": "{{code}} … escriu la qualificació (+, #, -…) o Tab per completar",
       "toggle": "Suggeriments",
       "toggleHelp": "Proposa la següent acció segons la lògica del joc, el sistema de joc i el de recepció. Amb la línia d'ordres buida, escriu només la qualificació (p. ex. + o #16) o prem Tab per omplir el codi proposat."
+    },
+    "json": {
+      "export": "Exporta (JSON)",
+      "import": "Importa (JSON)",
+      "systemsImported": "S'han aplicat {{count}} de {{total}} sistemes del fitxer. Revisa'ls i desa.",
+      "systemsImportHelp": "Importa sistemes de joc d'un fitxer JSON. El col·locador es busca pel dorsal a la formació de cada set.",
+      "receptionImported": "Recepció importada ({{team}}, {{system}}). Revisa-la i desa-la per a aquest equip.",
+      "receptionImportHelp": "Importa un sistema de recepció d'un fitxer JSON (amb coordenades o només amb la notació de text).",
+      "replaceUnsaved": "Hi ha canvis sense desar. Vols substituir-los per les dades del fitxer?",
+      "errors": {
+        "json": "El fitxer no és un JSON vàlid.",
+        "format": "El fitxer no és d'aquest tipus de dades.",
+        "system": "El sistema de joc del fitxer no és vàlid.",
+        "rotations": "Hi ha una rotació no vàlida al fitxer ({{detail}}).",
+        "notation": "La notació de text del fitxer té errors ({{detail}}).",
+        "entries": "Hi ha una entrada no vàlida al fitxer (núm. {{detail}})."
+      }
     }
   }
 }

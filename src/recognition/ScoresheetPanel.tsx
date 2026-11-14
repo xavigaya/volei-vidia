@@ -17,6 +17,8 @@ import {
 } from './scoresheet';
 import type { UseRecognition } from './useRecognition';
 import { ScoresheetViewer } from './ScoresheetViewer';
+import { jsonBlob, scoresheetToJson, slug } from './exchange';
+import { saveFile } from '../lib/download';
 
 interface Props {
   m: UseMatch;
@@ -56,6 +58,14 @@ export function ScoresheetPanel({ m, r, canEdit }: Props) {
     loadSheet(initialSheet(r.scoresheet, maxSets));
     setDirty(false);
   }, [r.scoresheet, maxSets]);
+
+  async function onExportJson() {
+    const date = match.played_at ? match.played_at.slice(0, 10) : null;
+    const data = scoresheetToJson(sheet, { home: match.home.name, away: match.away.name, date });
+    await saveFile(`${slug('acta', match.home.name, match.away.name, date)}.json`, jsonBlob(data)).catch((e: Error) =>
+      setMsg({ ok: false, text: e.message }),
+    );
+  }
 
   async function onImportJson(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -127,6 +137,9 @@ export function ScoresheetPanel({ m, r, canEdit }: Props) {
             {t('recognition.sheet.viewer.open')}
           </button>
         )}
+        <button className="btn btn-sm" onClick={() => void onExportJson()} disabled={!filled}>
+          {t('recognition.json.export')}
+        </button>
         {canEdit && (
           <label className="btn btn-sm" title={t('recognition.sheet.import.help')}>
             {t('recognition.sheet.import.button')}

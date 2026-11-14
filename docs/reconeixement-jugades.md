@@ -116,7 +116,25 @@ L'app llista les diferències (p. ex. *«Set 2, equip local, canvi de servei nú
   `H` és l'equip local i `A` el visitant (no l'equip A/B de l'acta, que es decideix per sorteig).
 - **Lectura automàtica de l'acta escrita a mà**: un OCR convencional no llegeix bé la lletra a mà dins les caselles. Per mantenir el cost zero, es farà amb un model de visió local a l'eina `vidia-vision` (RTX 3070), que generarà aquest JSON per revisar-lo i importar-lo. És una tasca de la fase 1.
 
-### 3.4 Per què són importants
+### 3.4 Intercanvi en JSON
+
+L'acta, el sistema de recepció i el sistema de joc es poden **exportar i importar en JSON** des de cada apartat de la pestanya *Anàlisi assistida*. Cada fitxer porta `format` i `version`:
+
+| Dades | `format` | Contingut |
+|---|---|---|
+| Acta | `volei-vidia/scoresheet` | `sets` (vegeu §3.3) i `notes`; també s'accepta sense `format` (plantilla) |
+| Recepció | `volei-vidia/reception` | `team`, `system`, `template`, `hasLibero`, `rotations` (coordenades de les rotacions personalitzades) i `notation` (totes les rotacions en notació de text) |
+| Sistema de joc | `volei-vidia/game-systems` | `systems`: `[{ "set": 1, "side": "H", "system": "51", "setter": 2, "anchor": 0 }]` |
+
+- Una recepció es pot importar només amb `system` i `notation` (sense coordenades).
+- En importar sistemes de joc, el col·locador es busca pel **dorsal** (`setter`) a la formació de cada set; si no hi és, es fa servir la posició (`anchor`, 0–5 = I–VI).
+- Les dades importades queden a punt per revisar i s'han de desar.
+
+Plantilla d'exemple: `docs/exemples/plantilla-acta.json`.
+
+**Actes digitals no oficials:** a més de l'acta oficial en paper, Claude pot convertir a aquest JSON les transcripcions digitals (PDF amb text) que se li passin, comprovant que els punts al canvi de servei reprodueixen el resultat de cada set.
+
+### 3.5 Per què són importants
 
 Amb la càmera darrere el fons i a 1080p, llegir els dorsals no és fiable. Combinant la formació, el sistema de joc i el sistema de recepció amb la **posició detectada de cada jugador al camp**, el sistema pot saber qui és qui sense llegir dorsals (§6.4). També redueix molt les dades necessàries per entrenar.
 

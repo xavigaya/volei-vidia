@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { SideCode } from '../lib/types';
 import type { UseMatch } from '../matches/useMatch';
@@ -17,6 +17,8 @@ import {
   type TemplateCode,
 } from './reception';
 import type { UseRecognition } from './useRecognition';
+import { jsonBlob, parseReceptionJson, receptionToJson, slug } from './exchange';
+import { saveFile } from '../lib/download';
 
 interface Props {
   m: UseMatch;
@@ -44,7 +46,15 @@ export function ReceptionPanel({ m, r, canEdit }: Props) {
   const saved = r.receptionFor(side, code, hasLibero);
   const [rs, setRs] = useState<ReceptionSystem>(saved);
   const [dirty, setDirty] = useState(false);
+  // Recepció importada d'un fitxer d'un altre sistema de joc: s'aplica un cop canviat el sistema
+  const pendingImport = useRef<ReceptionSystem | null>(null);
   useEffect(() => {
+    if (pendingImport.current && pendingImport.current.system === code) {
+      setRs(pendingImport.current);
+      pendingImport.current = null;
+      setDirty(true);
+      return;
+    }
     setRs(r.receptionFor(side, code, hasLibero));
     setDirty(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -165,6 +175,38 @@ export function ReceptionPanel({ m, r, canEdit }: Props) {
   useEffect(() => {
     if (!textEdited) setText(generated);
   }, [generated, textEdited]);
+
+  async function exportJson() {
+    const name = side === 'H' ? match.home.name : match.away.name;
+    await saveFile(`${slug('recepcio', name, rs.system)}.json`, jsonBlob(receptionToJson(rs, formatReception(rs), name))).catch(
+      (e: Error) => setMsg({ ok: false, text: e.message }),
+    );
+  }
+
+  async function importJson(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    const res = parseReceptionJson(await file.text());
+    if (!res.ok) {
+      setMsg({ ok: false, text: t(`recognition.json.errors.${res.error}`, { detail: res.detail ?? '' }) });
+      return;
+    }
+    if (dirty && !window.confirm(t('recognition.json.replaceUnsaved'))) return;
+    const imported = res.reception;
+    if (imported.system !== code) {
+      pendingImport.current = imported;
+      setCode(imported.system);
+    } else {
+      setRs(imported);
+      setDirty(true);
+    }
+    setTextEdited(false);
+    setMsg({
+      ok: true,
+      text: t('recognition.json.receptionImported', { team: res.team ?? '—', system: imported.system }),
+    });
+  }
 
   function applyText() {
     const res = parseReception(text, rs.system);
@@ -404,6 +446,18 @@ export function ReceptionPanel({ m, r, canEdit }: Props) {
           </div>
         )}
       </details>
+
+      <div className="row wrap">
+        <button className="btn btn-sm" onClick={() => void exportJson()}>
+          {t('recognition.json.export')}
+        </button>
+        {canEdit && (
+          <label className="btn btn-sm" title={t('recognition.json.receptionImportHelp')}>
+            {t('recognition.json.import')}
+            <input type="file" accept="application/json,.json" hidden onChange={(e) => void importJson(e)} />
+          </label>
+        )}
+      </div>
 
       {canEdit && (
         <div className="row wrap">

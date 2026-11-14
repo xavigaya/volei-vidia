@@ -934,6 +934,23 @@
       "placeholder": "{{code}} … type the grade (+, #, -…) or Tab to complete",
       "toggle": "Suggestions",
       "toggleHelp": "Suggests the next action from game logic, the game system and the reception system. With the command line empty, type only the grade (e.g. + or #16) or press Tab to fill in the suggested code."
+    },
+    "json": {
+      "export": "Export (JSON)",
+      "import": "Import (JSON)",
+      "systemsImported": "Applied {{count}} of {{total}} systems from the file. Review them and save.",
+      "systemsImportHelp": "Imports game systems from a JSON file. The setter is matched by shirt number in each set's lineup.",
+      "receptionImported": "Reception imported ({{team}}, {{system}}). Review it and save it for this team.",
+      "receptionImportHelp": "Imports a reception system from a JSON file (with coordinates or only the text notation).",
+      "replaceUnsaved": "There are unsaved changes. Replace them with the file's data?",
+      "errors": {
+        "json": "The file is not valid JSON.",
+        "format": "The file is not this kind of data.",
+        "system": "The file's game system is not valid.",
+        "rotations": "There is an invalid rotation in the file ({{detail}}).",
+        "notation": "The file's text notation has errors ({{detail}}).",
+        "entries": "There is an invalid entry in the file (#{{detail}})."
+      }
     }
   }
 }
