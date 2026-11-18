@@ -802,5 +802,227 @@
     "breakPointHelp": "Punts guanyats quan l’equip serveix",
     "pdfTitle": "Rendiment dels equips",
     "pdfNote": "Escala de cada eix (0 al centre, 100 a la vora); els valors fora de l’escala es dibuixen a l’extrem."
+  },
+  "recognition": {
+    "tab": "Anàlisi assistida",
+    "set": "Set",
+    "team": "Equip",
+    "saved": "Desat.",
+    "unsaved": "Hi ha canvis sense desar.",
+    "missingMigration": "Per fer servir l'anàlisi assistida cal executar la migració supabase/migrations/0014_recognition.sql a l'SQL Editor de Supabase.",
+    "sections": {
+      "systems": "Sistema de joc",
+      "reception": "Recepció",
+      "sheet": "Verificació amb l'acta",
+      "calibration": "Calibració del vídeo"
+    },
+    "systemNames": {
+      "51": "5-1 (S-OH-MB-OPP)",
+      "51m": "5-1 (S-MB-OH-OPP)",
+      "62": "6-2 (col·loca el de la zaga)",
+      "42": "4-2 (col·loca el de davant)"
+    },
+    "templates": {
+      "R2": "2 receptors",
+      "R3": "3 receptors (L + 2 OH)",
+      "R4": "4 receptors",
+      "R5": "5 receptors (W)"
+    },
+    "status": {
+      "saved": "Desat",
+      "proposed": "Proposta",
+      "changed": "Modificat"
+    },
+    "systems": {
+      "help": "El sistema es dedueix de la formació inicial de cada set i de la posició de cada jugador a la convocatòria. Revisa'l, corregeix-lo si cal i desa'l. El col·locador marcat és el de referència per numerar les rotacions (P1–P6).",
+      "noSets": "Encara no hi ha cap set començat. Entra la formació inicial del primer set a la pestanya Marcador.",
+      "lineup": "Formació inicial",
+      "system": "Sistema",
+      "setter": "Col·locador de referència",
+      "ambiguous": "Dos col·locadors: indica si és 6-2 o 4-2.",
+      "noSetter": "No hi ha cap col·locador a la formació: tria'l a mà.",
+      "unknownOrder": "No s'ha pogut deduir l'ordre: comprova el sistema.",
+      "mismatch": "No coincideix amb la posició de la convocatòria: {{list}}",
+      "save": "Desa els sistemes de joc"
+    },
+    "reception": {
+      "help": "La recepció es desa per equip i sistema de joc, i es reutilitza als partits següents. Parteix d'una plantilla i ajusta les rotacions que calgui.",
+      "template": "Plantilla",
+      "withLibero": "Amb líbero",
+      "rotation": "Rotació",
+      "courtLabel": "Recepció a la rotació P{{rotation}}",
+      "net": "XARXA",
+      "editHelp": "Arrossega els jugadors per col·locar-los. Un toc (o Espai) marca o desmarca qui rep. Amb el teclat: fletxes per moure (Maj = 1 m).",
+      "legal": "Col·locació reglamentària",
+      "frontBack": "La posició {{b}} ha d'estar més lluny de la xarxa que la {{a}}.",
+      "leftRight": "La posició {{a}} ha d'estar a l'esquerra de la {{b}}.",
+      "receivers": "Receptors",
+      "receiver": "receptor",
+      "setterHere": "Col·loca el jugador de la posició {{pos}}.",
+      "resetRotation": "Restableix aquesta rotació",
+      "resetAll": "Restableix-les totes",
+      "notation": "Notació de text",
+      "notationHelp": "Una rotació per línia: P1: S@1x MB1@4x OPP@2x OH1@7* L@8* OH2@9*. Rol@zona (1–9), x = a la xarxa, f = al fons, * = receptor. OH i MB sense número s'assignen per ordre.",
+      "applyText": "Aplica el text",
+      "discardText": "Descarta els canvis del text",
+      "copyText": "Copia",
+      "save": "Desa la recepció de {{team}}",
+      "parse": {
+        "syntax": "Línia {{line}}: no s'entén «{{text}}».",
+        "rotation": "Línia {{line}}: la rotació ha de ser P1–P6 («{{text}}»).",
+        "label": "Línia {{line}}: rol desconegut per a aquest sistema («{{text}}»).",
+        "zone": "Línia {{line}}: zona no vàlida («{{text}}»).",
+        "duplicate": "Línia {{line}}: rol repetit («{{text}}»)."
+      },
+      "source": {
+        "team": "Recepció de l'equip",
+        "club": "Per defecte del club",
+        "template": "Plantilla"
+      },
+      "makeDefault": "Fes-la servir per defecte a tots els partits",
+      "defaultHelp": "Desa aquesta recepció a l'equip i l'aplica, per a aquest sistema de joc, a tots els equips i partits del club que no en tinguin una de pròpia.",
+      "defaultConfirm": "La recepció de {{team}} ({{system}}) passarà a ser la predeterminada per a tots els equips i partits del club que no en tinguin una de pròpia. Vols continuar?",
+      "defaultSaved": "Desada com a recepció per defecte del club.",
+      "defaultMigration": "Per desar la recepció per defecte cal executar la migració supabase/migrations/0015_reception_defaults.sql."
+    },
+    "sheet": {
+      "help": "Entra les dades de l'acta oficial. Els punts al canvi són el marcador de l'equip cada vegada que perd el servei, en ordre (les caselles de sota de cada servidor). Les diferències amb el partit codificat apareixen a dalt.",
+      "empty": "Encara no s'ha entrat cap dada de l'acta.",
+      "allOk": "Tot el que s'ha entrat de l'acta coincideix amb el partit codificat.",
+      "diffs_one": "{{count}} diferència amb el partit codificat:",
+      "diffs_other": "{{count}} diferències amb el partit codificat:",
+      "coded": "codificat",
+      "firstServe": "Primer servei",
+      "start": "Inici",
+      "end": "Final",
+      "minutes_one": "{{count}} minut",
+      "minutes_other": "{{count}} minuts",
+      "lineup": "Formació inicial",
+      "serveLoss": "Punts al canvi de servei",
+      "final": "Punts",
+      "notes": "Observacions",
+      "save": "Desa les dades de l'acta",
+      "diff": {
+        "missing_set": "Set {{set}}: és a l'acta ({{expected}}) però no s'ha codificat.",
+        "first_serve": "Set {{set}}: a l'acta serveix primer {{expected}}; al partit codificat, {{actual}}.",
+        "lineup": "Set {{set}}, {{team}}, posició {{pos}}: a l'acta hi ha el {{expected}}; al partit codificat, el {{actual}}.",
+        "serve_loss": "Set {{set}}, {{team}}, canvi de servei núm. {{n}}: a l'acta {{expected}}; al partit codificat {{actual}}.",
+        "final": "Set {{set}}: a l'acta {{expected}}; al partit codificat {{actual}}."
+      },
+      "viewer": {
+        "open": "Obre l'acta (PDF o imatge)",
+        "change": "Canvia el fitxer",
+        "rotateLeft": "Gira a l'esquerra",
+        "rotateRight": "Gira a la dreta",
+        "zoomIn": "Amplia",
+        "zoomOut": "Redueix",
+        "unsupported": "Format no admès: tria un PDF o una imatge (JPG, PNG…).",
+        "help": "Obre la foto o el PDF de l'acta per veure-la al costat del formulari mentre la transcrius. El fitxer no es puja enlloc: només es mostra en aquest dispositiu. La lectura automàtica de l'acta escrita a mà la farà l'eina local d'anàlisi; de moment pots importar-ne les dades en JSON."
+      },
+      "import": {
+        "button": "Importa dades (JSON)",
+        "help": "Importa les dades de l'acta llegides per un altre programa (format JSON descrit a docs/reconeixement-jugades.md).",
+        "json": "El fitxer no és un JSON vàlid.",
+        "no_sets": "El fitxer no conté cap set.",
+        "set_number": "Hi ha un número de set no vàlid.",
+        "replace": "Ja hi ha dades de l'acta. Les vols substituir per les del fitxer?",
+        "done_one": "S'ha importat {{count}} set. Revisa'l i desa.",
+        "done_other": "S'han importat {{count}} sets. Revisa'ls i desa."
+      },
+      "sequence": {
+        "ok": "Seqüència de punts coherent ({{count}} punts).",
+        "incomplete": "Seqüència incompleta: amb les dades entrades s'arriba a {{score}} ({{count}} punts).",
+        "decreasing": "Els punts al canvi d'un equip no poden baixar: revisa-ho.",
+        "leftover": "Sobren punts al canvi: no quadren amb el final del set.",
+        "final_mismatch": "La seqüència acaba {{score}}, que no coincideix amb el resultat entrat.",
+        "no_first_serve": "Falta el primer servei."
+      }
+    },
+    "suggest": {
+      "title": "Proposta:",
+      "placeholder": "{{code}} … escriu la qualificació (+, #, -…) o Tab per completar",
+      "toggle": "Suggeriments",
+      "toggleHelp": "Proposa la següent acció segons la lògica del joc, el sistema de joc i el de recepció. Amb la línia d'ordres buida, escriu només la qualificació (p. ex. + o #16) o prem Tab per omplir el codi proposat."
+    },
+    "json": {
+      "export": "Exporta (JSON)",
+      "import": "Importa (JSON)",
+      "systemsImported": "S'han aplicat {{count}} de {{total}} sistemes del fitxer. Revisa'ls i desa.",
+      "systemsImportHelp": "Importa sistemes de joc d'un fitxer JSON. El col·locador es busca pel dorsal a la formació de cada set.",
+      "receptionImported": "Recepció importada ({{team}}, {{system}}). Revisa-la i desa-la per a aquest equip.",
+      "receptionImportHelp": "Importa un sistema de recepció d'un fitxer JSON (amb coordenades o només amb la notació de text).",
+      "replaceUnsaved": "Hi ha canvis sense desar. Vols substituir-los per les dades del fitxer?",
+      "errors": {
+        "json": "El fitxer no és un JSON vàlid.",
+        "format": "El fitxer no és d'aquest tipus de dades.",
+        "system": "El sistema de joc del fitxer no és vàlid.",
+        "rotations": "Hi ha una rotació no vàlida al fitxer ({{detail}}).",
+        "notation": "La notació de text del fitxer té errors ({{detail}}).",
+        "entries": "Hi ha una entrada no vàlida al fitxer (núm. {{detail}})."
+      }
+    },
+    "acta": {
+      "lineupFromActa": "Formació i primer servei presos de l'acta (Anàlisi assistida). Revisa'ls i els líberos abans de començar.",
+      "unknownPlayers": "Aquests dorsals de l'acta no són a la convocatòria (o hi són com a líbero): {{list}}.",
+      "useActaLineup": "Usa la formació de l'acta",
+      "fixDiffers": "La formació o el primer servei d'aquest set no coincideixen amb l'acta.",
+      "expected": "Acta · punt {{n}} ({{score}}): serveix {{server}} (núm. {{player}}) · el guanya {{winner}}.",
+      "serverMismatch": "Al partit codificat serveix l'altre equip: revisa els punts anteriors.",
+      "diverged": "La codificació del set {{set}} no coincideix amb l'acta des del punt {{n}} ({{score}}), que segons l'acta guanya {{winner}}. Revisa-ho a Anàlisi assistida → Verificació amb l'acta.",
+      "expectedPoint": "Segons l'acta, aquest punt el guanya aquest equip.",
+      "againstActa": "Segons l'acta, aquest punt el guanya {{team}}."
+    },
+    "calib": {
+      "section": "Calibració del vídeo",
+      "help": "Obre el vídeo original del partit (o una captura d'un fotograma), tria un moment amb la pista ben visible i marca els 8 punts en ordre. La pista projectada (en verd) ha de coincidir amb les línies reals. El vídeo no es puja: només es desen els punts.",
+      "openFile": "Obre el vídeo o una imatge",
+      "changeFile": "Canvia el fitxer",
+      "localHint": "Vídeo d'aquest partit: {{name}}",
+      "unsupported": "Format no admès: tria un vídeo o una imatge.",
+      "noFrame": "Sense fotograma. Amb un vídeo de YouTube no es pot capturar el fotograma: obre el fitxer original o una captura de pantalla.",
+      "frameTime": "Moment del vídeo",
+      "frameLabel": "Fotograma per calibrar",
+      "fromTime": "Vàlida a partir del segon",
+      "fromTimeHelp": "La calibració es desa a partir d'aquest moment del vídeo.",
+      "points": {
+        "nl": "Cantonada esquerra propera",
+        "nr": "Cantonada dreta propera",
+        "fr": "Cantonada dreta llunyana",
+        "fl": "Cantonada esquerra llunyana",
+        "netL": "Xarxa: cinta superior, extrem esquerre (sobre la línia lateral)",
+        "netR": "Xarxa: cinta superior, extrem dret (sobre la línia lateral)",
+        "antL": "Antena esquerra: punta superior",
+        "antR": "Antena dreta: punta superior"
+      },
+      "clearPoint": "Esborra aquest punt",
+      "needCorners": "Marca primer les 4 cantonades (esquerra i dreta vistes des de la càmera).",
+      "groundOnly": "Pista calibrada. Marca la xarxa i les antenes per poder calcular l'alçada de la pilota.",
+      "quality": {
+        "good": "Calibració bona (error mitjà {{rmse}} px).",
+        "fair": "Calibració acceptable (error mitjà {{rmse}} px). Pots ampliar i afinar els punts.",
+        "poor": "Calibració dolenta (error mitjà {{rmse}} px): revisa els punts marcats en vermell."
+      },
+      "editHelp": "Clica per col·locar el punt actiu (es passa al següent). Arrossega'l per corregir-lo. Amb el teclat, les fletxes el mouen 1 píxel (Maj = 5).",
+      "net": "Alçada de la xarxa",
+      "netM": "Masculina (2,43 m)",
+      "netF": "Femenina (2,24 m)",
+      "netOther": "Altra",
+      "sides": "Equip al costat de la càmera",
+      "firstSet": "Set 1:",
+      "sidesHelp": "Es canvia de camp a cada set. Al set decisiu el camp es sorteja i es canvia als 8 punts: revisa'l si cal.",
+      "saveFrom": "Desa la calibració (des de {{time}})",
+      "saved": "Calibració desada (vàlida des de {{time}}).",
+      "missingMigration": "Per desar la calibració cal executar la migració supabase/migrations/0016_video_calibrations.sql.",
+      "confirmDelete": "Vols eliminar la calibració que comença a {{time}}?",
+      "savedList": "Calibracions desades",
+      "fromLabel": "Des de {{time}}",
+      "segmentsHelp": "Si la càmera es mou durant el partit, afegeix una calibració nova a partir d'aquell moment."
+    },
+    "package": {
+      "export": "Exporta el paquet d'anàlisi",
+      "help": "Fitxer per a l'eina local d'anàlisi de vídeo (vidia-vision): calibració, formacions, convocatòria, sistemes, acta i accions amb el seu temps. No inclou el vídeo ni els noms dels jugadors.",
+      "done": "Paquet exportat. Analitza'l amb: vidia-vision.cmd analyze paquet.json --video partit.mp4",
+      "noCalibration": "Paquet exportat, però sense calibració: calibra el vídeo abans d'analitzar-lo."
+    }
   }
 }

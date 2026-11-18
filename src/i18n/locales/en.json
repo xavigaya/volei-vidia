@@ -802,5 +802,227 @@
     "breakPointHelp": "Points won when serving",
     "pdfTitle": "Team performance",
     "pdfNote": "Scale of each axis (0 at the centre, 100 at the edge); values outside the scale are drawn at the end."
+  },
+  "recognition": {
+    "tab": "Assisted analysis",
+    "set": "Set",
+    "team": "Team",
+    "saved": "Saved.",
+    "unsaved": "There are unsaved changes.",
+    "missingMigration": "To use assisted analysis, run the migration supabase/migrations/0014_recognition.sql in the Supabase SQL Editor.",
+    "sections": {
+      "systems": "Game system",
+      "reception": "Reception",
+      "sheet": "Scoresheet check",
+      "calibration": "Video calibration"
+    },
+    "systemNames": {
+      "51": "5-1 (S-OH-MB-OPP)",
+      "51m": "5-1 (S-MB-OH-OPP)",
+      "62": "6-2 (back-row setter sets)",
+      "42": "4-2 (front-row setter sets)"
+    },
+    "templates": {
+      "R2": "2 passers",
+      "R3": "3 passers (L + 2 OH)",
+      "R4": "4 passers",
+      "R5": "5 passers (W)"
+    },
+    "status": {
+      "saved": "Saved",
+      "proposed": "Proposed",
+      "changed": "Modified"
+    },
+    "systems": {
+      "help": "The system is inferred from each set's starting lineup and each player's position in the match roster. Review it, fix it if needed and save it. The marked setter is the reference for numbering rotations (P1–P6).",
+      "noSets": "No set has started yet. Enter the first set's starting lineup in the Scoreboard tab.",
+      "lineup": "Starting lineup",
+      "system": "System",
+      "setter": "Reference setter",
+      "ambiguous": "Two setters: choose 6-2 or 4-2.",
+      "noSetter": "There is no setter in the lineup: choose one manually.",
+      "unknownOrder": "The order could not be inferred: check the system.",
+      "mismatch": "Does not match the roster position: {{list}}",
+      "save": "Save game systems"
+    },
+    "reception": {
+      "help": "Reception is saved per team and game system, and reused in later matches. Start from a template and adjust the rotations you need.",
+      "template": "Template",
+      "withLibero": "With libero",
+      "rotation": "Rotation",
+      "courtLabel": "Reception in rotation P{{rotation}}",
+      "net": "NET",
+      "editHelp": "Drag players to place them. A tap (or Space) toggles who passes. Keyboard: arrows to move (Shift = 1 m).",
+      "legal": "Legal positions",
+      "frontBack": "Position {{b}} must be farther from the net than {{a}}.",
+      "leftRight": "Position {{a}} must be to the left of {{b}}.",
+      "receivers": "Passers",
+      "receiver": "passer",
+      "setterHere": "The player in position {{pos}} sets.",
+      "resetRotation": "Reset this rotation",
+      "resetAll": "Reset all",
+      "notation": "Text notation",
+      "notationHelp": "One rotation per line: P1: S@1x MB1@4x OPP@2x OH1@7* L@8* OH2@9*. Role@zone (1–9), x = at the net, f = at the back, * = passer. OH and MB without a number are assigned in order.",
+      "applyText": "Apply text",
+      "discardText": "Discard text changes",
+      "copyText": "Copy",
+      "save": "Save {{team}} reception",
+      "parse": {
+        "syntax": "Line {{line}}: cannot read “{{text}}”.",
+        "rotation": "Line {{line}}: rotation must be P1–P6 (“{{text}}”).",
+        "label": "Line {{line}}: unknown role for this system (“{{text}}”).",
+        "zone": "Line {{line}}: invalid zone (“{{text}}”).",
+        "duplicate": "Line {{line}}: repeated role (“{{text}}”)."
+      },
+      "source": {
+        "team": "Team reception",
+        "club": "Club default",
+        "template": "Template"
+      },
+      "makeDefault": "Use as default for all matches",
+      "defaultHelp": "Saves this reception for the team and applies it, for this game system, to every team and match in the club that has none of its own.",
+      "defaultConfirm": "{{team}}'s reception ({{system}}) will become the default for every team and match in the club that has none of its own. Continue?",
+      "defaultSaved": "Saved as the club default reception.",
+      "defaultMigration": "To save the default reception, run the migration supabase/migrations/0015_reception_defaults.sql."
+    },
+    "sheet": {
+      "help": "Enter the official scoresheet data. Points at side-out are the team's score each time it loses the serve, in order (the boxes under each server). Differences with the coded match appear above.",
+      "empty": "No scoresheet data has been entered yet.",
+      "allOk": "Everything entered from the scoresheet matches the coded match.",
+      "diffs_one": "{{count}} difference with the coded match:",
+      "diffs_other": "{{count}} differences with the coded match:",
+      "coded": "coded",
+      "firstServe": "First serve",
+      "start": "Start",
+      "end": "End",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes",
+      "lineup": "Starting lineup",
+      "serveLoss": "Points at loss of serve",
+      "final": "Points",
+      "notes": "Notes",
+      "save": "Save scoresheet data",
+      "diff": {
+        "missing_set": "Set {{set}}: on the scoresheet ({{expected}}) but not coded.",
+        "first_serve": "Set {{set}}: on the scoresheet {{expected}} serves first; in the coded match, {{actual}}.",
+        "lineup": "Set {{set}}, {{team}}, position {{pos}}: scoresheet has {{expected}}; coded match has {{actual}}.",
+        "serve_loss": "Set {{set}}, {{team}}, loss of serve #{{n}}: scoresheet {{expected}}; coded match {{actual}}.",
+        "final": "Set {{set}}: scoresheet {{expected}}; coded match {{actual}}."
+      },
+      "viewer": {
+        "open": "Open scoresheet (PDF or image)",
+        "change": "Change file",
+        "rotateLeft": "Rotate left",
+        "rotateRight": "Rotate right",
+        "zoomIn": "Zoom in",
+        "zoomOut": "Zoom out",
+        "unsupported": "Unsupported format: choose a PDF or an image (JPG, PNG…).",
+        "help": "Open the scoresheet photo or PDF to see it next to the form while you transcribe it. The file is not uploaded anywhere: it is only shown on this device. Automatic reading of handwritten scoresheets will be done by the local analysis tool; for now you can import its data as JSON."
+      },
+      "import": {
+        "button": "Import data (JSON)",
+        "help": "Imports scoresheet data read by another program (JSON format described in docs/reconeixement-jugades.md).",
+        "json": "The file is not valid JSON.",
+        "no_sets": "The file contains no sets.",
+        "set_number": "There is an invalid set number.",
+        "replace": "There is already scoresheet data. Replace it with the file's?",
+        "done_one": "{{count}} set imported. Review it and save.",
+        "done_other": "{{count}} sets imported. Review them and save."
+      },
+      "sequence": {
+        "ok": "Rally sequence is consistent ({{count}} rallies).",
+        "incomplete": "Incomplete sequence: the data entered reaches {{score}} ({{count}} rallies).",
+        "decreasing": "A team's points at loss of serve cannot go down: check them.",
+        "leftover": "Extra points at loss of serve: they don't fit the end of the set.",
+        "final_mismatch": "The sequence ends {{score}}, which does not match the result entered.",
+        "no_first_serve": "First serve is missing."
+      }
+    },
+    "suggest": {
+      "title": "Suggested:",
+      "placeholder": "{{code}} … type the grade (+, #, -…) or Tab to complete",
+      "toggle": "Suggestions",
+      "toggleHelp": "Suggests the next action from game logic, the game system and the reception system. With the command line empty, type only the grade (e.g. + or #16) or press Tab to fill in the suggested code."
+    },
+    "json": {
+      "export": "Export (JSON)",
+      "import": "Import (JSON)",
+      "systemsImported": "Applied {{count}} of {{total}} systems from the file. Review them and save.",
+      "systemsImportHelp": "Imports game systems from a JSON file. The setter is matched by shirt number in each set's lineup.",
+      "receptionImported": "Reception imported ({{team}}, {{system}}). Review it and save it for this team.",
+      "receptionImportHelp": "Imports a reception system from a JSON file (with coordinates or only the text notation).",
+      "replaceUnsaved": "There are unsaved changes. Replace them with the file's data?",
+      "errors": {
+        "json": "The file is not valid JSON.",
+        "format": "The file is not this kind of data.",
+        "system": "The file's game system is not valid.",
+        "rotations": "There is an invalid rotation in the file ({{detail}}).",
+        "notation": "The file's text notation has errors ({{detail}}).",
+        "entries": "There is an invalid entry in the file (#{{detail}})."
+      }
+    },
+    "acta": {
+      "lineupFromActa": "Lineup and first serve taken from the scoresheet (Assisted analysis). Check them and the liberos before starting.",
+      "unknownPlayers": "These scoresheet numbers are not in the match roster (or are liberos): {{list}}.",
+      "useActaLineup": "Use the scoresheet lineup",
+      "fixDiffers": "This set's lineup or first serve does not match the scoresheet.",
+      "expected": "Scoresheet · rally {{n}} ({{score}}): {{server}} serves (#{{player}}) · {{winner}} wins it.",
+      "serverMismatch": "In the coded match the other team is serving: check the previous rallies.",
+      "diverged": "Set {{set}} coding diverges from the scoresheet from rally {{n}} ({{score}}), which the scoresheet gives to {{winner}}. Check it in Assisted analysis → Scoresheet check.",
+      "expectedPoint": "According to the scoresheet, this team wins this rally.",
+      "againstActa": "According to the scoresheet, {{team}} wins this rally."
+    },
+    "calib": {
+      "section": "Video calibration",
+      "help": "Open the match's original video (or a frame screenshot), pick a moment with the court clearly visible and mark the 8 points in order. The projected court (green) must match the real lines. The video is not uploaded: only the points are saved.",
+      "openFile": "Open video or image",
+      "changeFile": "Change file",
+      "localHint": "This match's video: {{name}}",
+      "unsupported": "Unsupported format: choose a video or an image.",
+      "noFrame": "No frame. A YouTube video's frame cannot be captured: open the original file or a screenshot.",
+      "frameTime": "Video time",
+      "frameLabel": "Frame to calibrate",
+      "fromTime": "Valid from second",
+      "fromTimeHelp": "The calibration is saved from this moment of the video.",
+      "points": {
+        "nl": "Near left corner",
+        "nr": "Near right corner",
+        "fr": "Far right corner",
+        "fl": "Far left corner",
+        "netL": "Net: top band, left end (above the sideline)",
+        "netR": "Net: top band, right end (above the sideline)",
+        "antL": "Left antenna: top",
+        "antR": "Right antenna: top"
+      },
+      "clearPoint": "Clear this point",
+      "needCorners": "First mark the 4 corners (left and right as seen from the camera).",
+      "groundOnly": "Court calibrated. Mark the net and antennas to compute ball height.",
+      "quality": {
+        "good": "Good calibration (mean error {{rmse}} px).",
+        "fair": "Acceptable calibration (mean error {{rmse}} px). You can zoom in and refine the points.",
+        "poor": "Poor calibration (mean error {{rmse}} px): check the points marked in red."
+      },
+      "editHelp": "Click to place the active point (moves to the next). Drag it to correct it. With the keyboard, arrows move it 1 pixel (Shift = 5).",
+      "net": "Net height",
+      "netM": "Men (2.43 m)",
+      "netF": "Women (2.24 m)",
+      "netOther": "Other",
+      "sides": "Team on the camera side",
+      "firstSet": "Set 1:",
+      "sidesHelp": "Teams change sides every set. In the deciding set sides are drawn and change at 8 points: check it if needed.",
+      "saveFrom": "Save calibration (from {{time}})",
+      "saved": "Calibration saved (valid from {{time}}).",
+      "missingMigration": "To save the calibration, run the migration supabase/migrations/0016_video_calibrations.sql.",
+      "confirmDelete": "Delete the calibration starting at {{time}}?",
+      "savedList": "Saved calibrations",
+      "fromLabel": "From {{time}}",
+      "segmentsHelp": "If the camera moves during the match, add a new calibration from that moment."
+    },
+    "package": {
+      "export": "Export analysis package",
+      "help": "File for the local video analysis tool (vidia-vision): calibration, lineups, roster, systems, scoresheet and actions with their time. It does not include the video or player names.",
+      "done": "Package exported. Analyse it with: vidia-vision.cmd analyze package.json --video match.mp4",
+      "noCalibration": "Package exported, but without calibration: calibrate the video before analysing it."
+    }
   }
 }

@@ -28,6 +28,9 @@ import type { PlayerHandle, VideoSource } from '../video/VideoPlayer';
 import { formatTime } from '../video/youtube';
 import { paramToFilter } from '../video/clips';
 import { readAutoPause, writeAutoPause, type AutoPause } from '../video/autoPause';
+import { useSuggestion } from '../recognition/useSuggestion';
+import { EVAL_ONLY, suggestionPrefix } from '../recognition/suggest';
+import { differsFromActa, lineupFromActa } from '../recognition/actaLineup';
 
 const SIDES: Side[] = ['H', 'A'];
 
@@ -117,6 +120,13 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
       playerRef.current?.pause();
     }
   }, [active]);
+  // Un codi amb error atura el vídeo per poder-lo corregir (i anul·la la represa automàtica)
+  const pauseForError = () => {
+    if (resumeTimer.current) window.clearTimeout(resumeTimer.current);
+    resumeTimer.current = null;
+    autoPaused.current = false;
+    if (source) playerRef.current?.pause();
+  };
   const seekTo = (time: number | null | undefined) => {
     if (time == null || !playerRef.current) return;
     playerRef.current.seek(time - 3);
@@ -136,6 +146,13 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
   }, [m.players]);
 
   const canCode = m.canCode;
+  // Suggeriments per lògica de joc (anàlisi assistida)
+  const sugg = useSuggestion(m, active && canCode);
+  const suggestion = canCode ? sugg.suggestion : null;
+  const suggestedCode = suggestion ? suggestionPrefix(suggestion.primary) : '';
+  // Acta (anàlisi assistida): punt esperat i desquadraments
+  const acta = sugg.acta;
+  const expectedWinner = acta.divergence == null ? (acta.expected?.winner ?? null) : null;
   const inPlay = state.phase === 'in_play';
   const nextSet = state.currentSet + 1;
 
@@ -145,6 +162,7 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
       const r = await m.append(ev, videoTime());
       if (!r.ok) {
         setMessage({ kind: 'error', text: engineErrorText(t, r.error) });
+        pauseForError();
         return false;
       }
       const infos: string[] = [];
@@ -190,16 +208,21 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
 
   async function onCommand(e: FormEvent) {
     e.preventDefault();
-    const r = parseCommand(command);
+    // Només la qualificació (i zones): s'aplica a la proposta ("+" → "a7R+")
+    const input = suggestedCode && EVAL_ONLY.test(command.trim()) ? suggestedCode + command.trim() : command;
+    const r = parseCommand(input);
     if (!r.ok) {
-      if (r.error !== 'empty') setMessage({ kind: 'error', text: `${t(`live.cmd.${r.error}`)} (${r.token})` });
+      if (r.error !== 'empty') {
+        setMessage({ kind: 'error', text: `${t(`live.cmd.${r.error}`)} (${r.token})` });
+        pauseForError();
+      }
       return;
     }
     for (const ev of r.events) {
       const ok = await send((st) => (ev.type === 'partial_action' ? resolveAction(st, ev) : ev));
       if (!ok) {
         // Es deixa a la línia només el que no s'ha pogut desar
-        setCommand(command.trim().split(/\s+/).slice(r.events.indexOf(ev)).join(' '));
+        setCommand(input.trim().split(/\s+/).slice(r.events.indexOf(ev)).join(' '));
         return;
       }
     }
@@ -207,6 +230,15 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
   }
 
   const log = useMemo(() => buildLog(m.events, state.rules), [m.events, state.rules]);
+  // Formació de l'acta per al set següent i per corregir el set en curs
+  const newSetActa = state.phase === 'awaiting_lineup' ? lineupFromActa(sugg.scoresheet, nextSet, suggestNextLineup(state), m.players) : null;
+  const actaLineupNote = (a: NonNullable<typeof newSetActa>) =>
+    [
+      t('recognition.acta.lineupFromActa'),
+      a.unknown.length ? t('recognition.acta.unknownPlayers', { list: a.unknown.map((u) => `${names[u.side]} ${u.number}`).join(', ') }) : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
   // Alineació inicial del set en curs (o de l'últim jugat), per poder-la corregir
   const lineupEvent = useMemo(() => {
     for (let i = m.events.length - 1; i >= 0; i--) {
@@ -215,6 +247,10 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
     }
     return null;
   }, [m.events]);
+
+  const currentLineup = lineupEvent && lineupEvent.type === 'lineup' ? { home: lineupEvent.home, away: lineupEvent.away, serving: lineupEvent.serving } : null;
+  const fixActaRaw = lineupEvent && currentLineup ? lineupFromActa(sugg.scoresheet, lineupEvent.set, currentLineup, m.players) : null;
+  const fixActa = fixActaRaw && currentLineup && differsFromActa(fixActaRaw, currentLineup) ? fixActaRaw : null;
 
   return (
     <div className={`live-layout ${source ? 'with-video' : ''}`}>
@@ -286,9 +322,31 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
         </div>
       </section>
 
-      {message && (
+      {message && (message.kind !== 'error' || !canCode) && (
         <div className={message.kind === 'error' ? 'error-box' : 'notice'} role="status">
           {message.text}
+        </div>
+      )}
+      {acta.expected && acta.divergence == null && (
+        <div className="notice small acta-hint" role="status">
+          {t('recognition.acta.expected', {
+            n: acta.expected.index + 1,
+            score: `${acta.expected.before.h}-${acta.expected.before.a}`,
+            server: names[acta.expected.server],
+            player: acta.expected.serverPlayer ?? '?',
+            winner: names[acta.expected.winner],
+          })}
+          {acta.expected.server !== state.serving && <strong className="warn-text"> {t('recognition.acta.serverMismatch')}</strong>}
+        </div>
+      )}
+      {acta.divergence != null && acta.sequence && (
+        <div className="notice small acta-hint acta-diverged" role="status">
+          {t('recognition.acta.diverged', {
+            set: acta.sequence.set,
+            n: acta.divergence + 1,
+            score: `${acta.sequence.rallies[acta.divergence].before.h}-${acta.sequence.rallies[acta.divergence].before.a}`,
+            winner: names[acta.sequence.rallies[acta.divergence].winner],
+          })}
         </div>
       )}
       {state.phase === 'match_over' && (
@@ -327,6 +385,8 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
           players={playerMaps}
           flipped={flip}
           send={send}
+          suggestion={suggestion}
+          expectedWinner={expectedWinner}
         />
       )}
 
@@ -335,7 +395,12 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
         <section className="actions">
           {(flip ? (['A', 'H'] as Side[]) : SIDES).map((side) => (
             <div key={side} className="action-col" style={{ ['--team' as string]: colors[side] }}>
-              <button className="btn btn-point" disabled={!inPlay} onClick={() => void send({ type: 'point', side })}>
+              <button
+                className={`btn btn-point ${expectedWinner === side ? 'acta-expected' : ''}`}
+                disabled={!inPlay}
+                onClick={() => void send({ type: 'point', side })}
+                title={expectedWinner === side ? t('recognition.acta.expectedPoint') : undefined}
+              >
                 {t('live.point')} {names[side]}
               </button>
               <div className="action-row">
@@ -364,6 +429,11 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
 
       {canCode && (
         <section className="command-bar card">
+          {message?.kind === 'error' && (
+            <div className="error-box cmd-error" role="alert">
+              {message.text}
+            </div>
+          )}
           <form onSubmit={onCommand} className="row">
             <input
               ref={cmdRef}
@@ -372,10 +442,16 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
               onChange={(e) => setCommand(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Escape') setCommand('');
+                // Tab amb la línia buida: omple la proposta per completar-la
+                if (e.key === 'Tab' && !e.shiftKey && !command && suggestedCode) {
+                  e.preventDefault();
+                  setCommand(suggestedCode);
+                  return;
+                }
                 // Les dreceres amb Ctrl (vídeo, desfer) no compten com a escriure
                 if (!e.ctrlKey && !e.metaKey && !e.altKey) onTyping();
               }}
-              placeholder={t('live.cmdPlaceholder')}
+              placeholder={suggestedCode ? t('recognition.suggest.placeholder', { code: suggestedCode }) : t('live.cmdPlaceholder')}
               aria-label={t('live.cmdLabel')}
               autoComplete="off"
               autoCapitalize="off"
@@ -397,6 +473,10 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
             <button className="btn" onClick={() => void m.undo()} disabled={m.events.length === 0} title="Ctrl+Z">
               ↶ {t('live.undo')}
             </button>
+            <label className="check small" title={t('recognition.suggest.toggleHelp')}>
+              <input type="checkbox" checked={sugg.enabled} onChange={(e) => sugg.setEnabled(e.target.checked)} />
+              {t('recognition.suggest.toggle')}
+            </label>
             <button className="btn cmd-help" onClick={() => setLegendOpen(true)}>
               {t('legend.title')}
             </button>
@@ -489,11 +569,13 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
 
       <Modal title={t('live.lineupForSet', { n: nextSet })} open={lineupOpen && active && state.phase === 'awaiting_lineup'} onClose={() => setLineupOpen(false)}>
         <LineupForm
+          key={newSetActa ? 'acta' : 'base'}
           setNumber={nextSet}
           isTiebreak={nextSet === state.rules.setsToWin * 2 - 1}
           players={m.players}
           teamNames={{ H: match.home.name, A: match.away.name }}
-          initial={suggestNextLineup(state)}
+          initial={newSetActa?.value ?? suggestNextLineup(state)}
+          note={newSetActa ? actaLineupNote(newSetActa) : null}
           onCancel={() => setLineupOpen(false)}
           onSubmit={async (v) => {
             const r = await m.append({ type: 'lineup', ...v }, videoTime());
@@ -519,6 +601,8 @@ export function LiveScoring({ m, clipFilter, active = true }: { m: UseMatch; cli
               players={m.players}
               teamNames={{ H: match.home.name, A: match.away.name }}
               initial={{ home: lineupEvent.home, away: lineupEvent.away, serving: lineupEvent.serving }}
+              alternative={fixActa ? { label: t('recognition.acta.useActaLineup'), value: fixActa.value } : null}
+              note={fixActa ? t('recognition.acta.fixDiffers') : null}
               onCancel={() => setFixOpen(false)}
               onSubmit={async (v) => {
                 const r = await m.editEvent(lineupEvent.seq, { type: 'lineup', ...v });

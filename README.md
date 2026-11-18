@@ -99,6 +99,33 @@ Per fer-ho servir en un pavelló sense cobertura: obre el partit abans de sortir
 - El vídeo no es reinicia en canviar de pestanya del partit (s'atura i continua on era) i cada dispositiu recorda on s'havia quedat cada vídeo.
 - Correcció de l'alineació inicial d'un set ja començat (botó *✎ Alineació del set*): es recalculen les rotacions i no es desa si alguna acció codificada deixa de ser vàlida.
 
+**Reconeixement de jugades — Etapa 0.1** (branca `reconeixement-jugades`; disseny a `docs/reconeixement-jugades.md`)
+
+- Pestanya nova *Anàlisi assistida* a cada partit (cal executar la migració `0014_recognition.sql`).
+- **Sistema de joc** de cada equip a cada set (5-1 en dos ordres, 6-2 i 4-2), deduït de la formació inicial i de les posicions de la convocatòria, amb avís si no hi coincideixen. Les rotacions es numeren P1–P6 per la posició del col·locador.
+- **Sistema de recepció** per equip i sistema de joc: plantilles de 2, 3, 4 o 5 receptors calculades per a cada rotació, editor visual (arrossegar i tocar per marcar receptors, també amb teclat), comprovació de faltes de posició i notació de text (`P1: S@1x MB1@4x OPP@2x OH1@7* L@8* OH2@9*`).
+- **Verificació amb l'acta oficial**: primer servei, formacions, punts a cada canvi de servei, resultat i durada de cada set; llista de diferències amb el partit codificat.
+- **Recepció per defecte del club**: la recepció d'un equip es pot aplicar a tots els partits (migració `0015_reception_defaults.sql`).
+- **Acta**: visor de la foto o el PDF al costat del formulari (girar, ampliar) i importació de les dades en JSON.
+- **Exportació i importació en JSON** de l'acta, del sistema de recepció i del sistema de joc (formats a `docs/reconeixement-jugades.md`, §3.4).
+- **Acta al Marcador**: la formació i el primer servei de l'acta omplen el formulari d'alineació de cada set; durant la codificació es mostra qui serveix i qui guanya cada punt segons l'acta i s'avisa si la codificació se'n desquadra.
+
+**Reconeixement de jugades — Etapa 0.2**
+
+- **Suggeriments per lògica de joc** a la pantalla de codificació: es proposa la següent acció (servei, recepció, col·locació, atac, bloqueig, defensa) amb els jugadors més probables segons la rotació, el sistema de joc i el de recepció.
+- Teclat: amb la línia buida, escriu només la qualificació (`+`, `#16`…) i Retorn, o Tab per omplir el codi proposat. Tauleta: un toc a la proposta tria jugador i fonament.
+- Es poden desactivar amb la casella *Suggeriments*.
+
+**Reconeixement de jugades — Etapa 1.1**
+
+- **Calibració del vídeo** (pestanya *Anàlisi assistida*, migració `0016_video_calibrations.sql`): sobre un fotograma del vídeo original (o una captura) es marquen les 4 cantonades, la cinta superior de la xarxa i les antenes. Es calcula l'homografia de la pista i el model de la càmera, es dibuixa la pista projectada per comprovar-ho i es mostra l'error de cada punt. També l'alçada de la xarxa, l'equip al costat de la càmera a cada set i calibracions per trams. Exportació en JSON per a l'eina d'anàlisi local.
+- Codificació: si un codi dona error, el vídeo s'atura i l'error apareix just a sobre de la línia d'ordres.
+
+**Reconeixement de jugades — Etapa 1.2**
+
+- **Eina local `vidia-vision`** (carpeta `vision/`, instruccions a `vision/README.md`): analitza el vídeo original a l'ordinador del club (Windows 11, GPU NVIDIA) i detecta cops i xiulets, la pilota, els jugadors a la pista, els contactes i les jugades (amb el servidor i el guanyador de l'acta). S'instal·la amb `install.ps1`.
+- A *Anàlisi assistida*, **Exporta el paquet d'anàlisi**: el fitxer que necessita l'eina (sense vídeo ni noms de jugadors).
+
 ## Tecnologia
 
 - React + TypeScript + Vite (una sola base de codi per a totes les plataformes).
@@ -191,4 +218,6 @@ src/offline/           Còpia local, cua de canvis pendents i sincronització
 src-tauri/             Aplicació d'escriptori (Tauri)
 assets/                Icones i pantalla d'inici d'Android
 src/i18n/              Traduccions (ca.json és la referència)
+src/recognition/       Anàlisi assistida: sistemes de joc, recepció, acta, suggeriments i calibració
+vision/                Eina local d'anàlisi de vídeo (Python): vidia-vision
 ```

@@ -15,6 +15,7 @@ import { onCourt, type MatchEventData, type MatchState, type Side } from '../eng
 import { playerDisplayName, type MatchPlayer, type SideCode } from '../lib/types';
 import { CourtMap } from './CourtMap';
 import { EVAL_KEY } from './Legend';
+import { suggestionPrefix, type Suggestion, type SuggestedAction } from '../recognition/suggest';
 
 export interface Selection {
   side: Side;
@@ -30,6 +31,10 @@ interface Props {
   players: Record<SideCode, Map<number, MatchPlayer>>;
   flipped: boolean;
   send: (ev: MatchEventData) => Promise<boolean>;
+  // Proposta de la següent acció (anàlisi assistida); null = desactivat
+  suggestion?: Suggestion | null;
+  // Equip que guanya aquest punt segons l'acta (si se sap)
+  expectedWinner?: Side | null;
 }
 
 const ZONES_KEY = 'svidia.zonesMode';
@@ -43,7 +48,7 @@ function readZonesMode(): boolean {
 }
 
 // Panell tàctil: jugador (tocant el camp) → fonament → [tipus] → qualificació → [origen i destinació]
-export function ActionPad({ state, selection, setSelection, names, colors, players, flipped, send }: Props) {
+export function ActionPad({ state, selection, setSelection, names, colors, players, flipped, send, suggestion, expectedWinner }: Props) {
   const { t } = useTranslation();
   const [skill, setSkill] = useState<Skill | null>(null);
   const [skillType, setSkillType] = useState<SkillType | null>(null);
@@ -79,6 +84,13 @@ export function ActionPad({ state, selection, setSelection, names, colors, playe
     if (s === 'S' && (!selection || selection.side !== state.serving)) {
       setSelection({ side: state.serving, player: onCourt(state.teams[state.serving])[0] });
     }
+  }
+
+  // Accepta una proposta: jugador i fonament en un sol toc
+  function accept(a: SuggestedAction, player: number) {
+    setSelection({ side: a.side, player });
+    setSkill(a.skill);
+    setSkillType(null);
   }
 
   async function commit(evaluation: Evaluation, s: Point2 | null, e: Point2 | null) {
@@ -140,6 +152,30 @@ export function ActionPad({ state, selection, setSelection, names, colors, playe
         </div>
       </div>
 
+      {suggestion && !skill && !pending && (
+        <div className="ap-suggest" aria-label={t('recognition.suggest.title')}>
+          <span className="small muted">{t('recognition.suggest.title')}</span>
+          {[suggestion.primary, ...suggestion.alternatives].flatMap((a, ai) =>
+            a.candidates.slice(0, ai === 0 ? 3 : 1).map((c, ci) => {
+              const p = players[a.side].get(c.player);
+              return (
+                <button
+                  key={`${ai}-${c.player}`}
+                  className={`chip-btn ap-suggest-chip ${ai === 0 && ci === 0 ? 'on' : ''} ${ai > 0 ? 'alt' : ''}`}
+                  style={{ ['--team' as string]: colors[a.side] }}
+                  onClick={() => accept(a, c.player)}
+                  title={`${names[a.side]} · ${t(`skills.${a.skill}`)} · ${p ? playerDisplayName(p.players) : c.player}`}
+                >
+                  <span className="mono">{suggestionPrefix(a, c.player)}</span>
+                  <span className="small">{t(`skills.${a.skill}`)}</span>
+                  {c.label && <span className="small muted-on">{c.label}</span>}
+                </button>
+              );
+            }),
+          )}
+        </div>
+      )}
+
       <div className="ap-skills">
         {SKILLS.map((s) => (
           <button
@@ -177,7 +213,8 @@ export function ActionPad({ state, selection, setSelection, names, colors, playe
             return (
               <button
                 key={ev}
-                className={`ap-eval ${pending === ev ? 'on' : ''} ${w ? (w === selection?.side ? 'win' : 'lose') : ''}`}
+                className={`ap-eval ${pending === ev ? 'on' : ''} ${w ? (w === selection?.side ? 'win' : 'lose') : ''} ${w && expectedWinner && w !== expectedWinner ? 'acta-against' : ''}`}
+                title={w && expectedWinner && w !== expectedWinner ? t('recognition.acta.againstActa', { team: names[expectedWinner] }) : undefined}
                 onClick={() => chooseEval(ev)}
                 disabled={!!pending && pending !== ev}
               >

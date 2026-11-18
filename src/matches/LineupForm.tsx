@@ -13,6 +13,10 @@ interface Props {
   initial: { home: TeamLineup; away: TeamLineup; serving: Side } | null;
   onSubmit: (v: { home: TeamLineup; away: TeamLineup; serving: Side }) => Promise<string | null>;
   onCancel: () => void;
+  // Avís a sobre del formulari (p. ex. "formació presa de l'acta")
+  note?: string | null;
+  // Formació alternativa que es pot aplicar amb un botó (p. ex. la de l'acta)
+  alternative?: { label: string; value: { home: TeamLineup; away: TeamLineup; serving: Side } } | null;
 }
 
 function playerName(list: MatchPlayer[], n: number): string {
@@ -30,7 +34,7 @@ function blank(players: MatchPlayer[], side: SideCode): TeamLineup {
   return { positions: [-1, -1, -1, -1, -1, -1], liberos, middles, autoLibero: liberos.length > 0 && middles.length > 0 };
 }
 
-export function LineupForm({ setNumber, isTiebreak, players, teamNames, initial, onSubmit, onCancel }: Props) {
+export function LineupForm({ setNumber, isTiebreak, players, teamNames, initial, onSubmit, onCancel, note, alternative }: Props) {
   const { t } = useTranslation();
   const [home, setHome] = useState<TeamLineup>(
     initial ? { ...initial.home, middles: middlesOf(players, 'H') } : blank(players, 'H'),
@@ -188,6 +192,22 @@ export function LineupForm({ setNumber, isTiebreak, players, teamNames, initial,
 
   return (
     <form onSubmit={submit} className="stack">
+      {note && <p className="notice small">{note}</p>}
+      {alternative && (
+        <div className="row wrap">
+          <button
+            type="button"
+            className="btn btn-sm"
+            onClick={() => {
+              setHome({ ...alternative.value.home, middles: middlesOf(players, 'H') });
+              setAway({ ...alternative.value.away, middles: middlesOf(players, 'A') });
+              setServing(alternative.value.serving);
+            }}
+          >
+            {alternative.label}
+          </button>
+        </div>
+      )}
       <p className="muted small">
         {t('live.lineupHelp', { set: setNumber })}
         {isTiebreak && <> {t('live.tiebreakToss')}</>}
