@@ -16,6 +16,20 @@ function Step($msg) { Write-Host "`n==> $msg" -ForegroundColor Cyan }
 # --- Python ----------------------------------------------------------
 Step "Comprovant Python (cal la 3.10, 3.11, 3.12 o 3.13)"
 $okVersions = @("3.10", "3.11", "3.12", "3.13")
+
+# Versió (p. ex. "3.13") d'un intèrpret, o $null. Es llegeix el text de
+# "--version" (sense dependre del codi de sortida, que Windows PowerShell no
+# sempre actualitza) i sense aturar el script si l'ordre escriu errors.
+function Get-PyVersion([string]$exe, [string[]]$pre) {
+    if (-not (Get-Command $exe -ErrorAction SilentlyContinue)) { return $null }
+    $old = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try { $out = (& $exe @pre --version 2>&1 | Out-String) } catch { $out = "" }
+    $ErrorActionPreference = $old
+    if ($out -match "Python (3\.\d+)") { return $Matches[1] }
+    return $null
+}
+
 # Primer el llançador "py" (per versió, de la més nova a la més antiga) i després el "python" del PATH
 $candidates = @()
 foreach ($v in @("3.13", "3.12", "3.11", "3.10")) { $candidates += , @("py", "-$v") }
@@ -24,9 +38,18 @@ $candidates += , @("python3")
 $py = $null
 foreach ($c in $candidates) {
     $exe = $c[0]
-    $pre = @($c | Select-Object -Skip 1)
-    try { $ver = (& $exe @pre -c "import sys; print('%d.%d' % sys.version_info[:2])" 2>$null | Select-Object -First 1) } catch { continue }
-    if ($LASTEXITCODE -eq 0 -and $okVersions -contains "$ver") { $py = $c; break }
+    $pre = [string[]]@($c | Select-Object -Skip 1)
+    $ver = Get-PyVersion $exe $pre
+    $label = ($c -join " ")
+    if ($ver -and ($okVersions -contains $ver)) {
+        Write-Host "  $label -> Python $ver (s'utilitzarà)"
+        $py = $c
+        break
+    } elseif ($ver) {
+        Write-Host "  $label -> Python $ver (versió no admesa)"
+    } else {
+        Write-Host "  $label -> no trobat"
+    }
 }
 if (-not $py) {
     Write-Host "No s'ha trobat Python 3.10–3.13." -ForegroundColor Yellow
@@ -34,8 +57,7 @@ if (-not $py) {
     exit 1
 }
 $pyExe = $py[0]
-$pyPre = @($py | Select-Object -Skip 1)
-& $pyExe @pyPre --version
+$pyPre = [string[]]@($py | Select-Object -Skip 1)
 
 # --- Entorn virtual ----------------------------------------------------
 if (-not (Test-Path ".venv")) {
@@ -48,7 +70,13 @@ $venvPy = Join-Path $PSScriptRoot ".venv\Scripts\python.exe"
 # --- GPU NVIDIA ------------------------------------------------------------
 Step "Comprovant la GPU NVIDIA"
 $hasNvidia = $false
-try { $smi = & nvidia-smi --query-gpu=name,driver_version --format=csv,noheader 2>$null; if ($LASTEXITCODE -eq 0) { $hasNvidia = $true; Write-Host $smi } } catch {}
+if (Get-Command nvidia-smi -ErrorAction SilentlyContinue) {
+    $old = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try { $smi = (& nvidia-smi --query-gpu=name,driver_version --format=csv,noheader 2>&1 | Out-String).Trim() } catch { $smi = "" }
+    $ErrorActionPreference = $old
+    if ($smi -match "NVIDIA|GeForce|RTX|Quadro|Tesla") { $hasNvidia = $true; Write-Host $smi }
+}
 if (-not $hasNvidia) {
     Write-Host "No es detecta cap GPU NVIDIA (nvidia-smi). Actualitza el controlador des de https://www.nvidia.com/Download/index.aspx" -ForegroundColor Yellow
     Write-Host "S'instal·larà PyTorch per a CPU (funciona, però la detecció de jugadors serà molt més lenta)."
