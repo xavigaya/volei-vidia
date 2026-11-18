@@ -12,7 +12,7 @@ import numpy as np
 
 from . import __version__
 from .audio import analyze_audio
-from .ball import BallDetector, ball_path, expected_diameter_fn, link_tracks
+from .ball import BallDetector, ball_path, expected_diameter_fn, link_tracks, mask_players
 from .calibration import Calibration, calibration_at
 from .contacts import attribute, fuse, trajectory_breaks
 from .media import audio_mono, frames, video_info
@@ -50,7 +50,7 @@ class CalLookup:
         return self.pkg.set_at(t)
 
 
-def analyze(pkg: AnalysisPackage, video: str, opts: Options, progress: Callable[[str], None] = _progress) -> dict:
+def analyze(pkg: AnalysisPackage, video: str, opts: Options, progress: Callable[[str], None] = _progress, detector=None) -> dict:
     t0 = time.time()
     info = video_info(video)
     end = opts.end if opts.end is not None else info.duration
@@ -65,8 +65,9 @@ def analyze(pkg: AnalysisPackage, video: str, opts: Options, progress: Callable[
 
     # --- Vídeo: pilota i jugadors ---------------------------------------------
     scale = opts.ball_width / info.width
-    detector = None
-    if opts.players:
+    if detector is not None:
+        progress(f"Jugadors: detector {getattr(detector, 'device', '')}")
+    elif opts.players:
         try:
             from .players import PersonDetector
 
@@ -108,10 +109,14 @@ def analyze(pkg: AnalysisPackage, video: str, opts: Options, progress: Callable[
     if writer is not None:
         writer.release()
 
+    players = tracker.tracks()
+    # Els braços i caps dels jugadors també es mouen: fora els candidats dins el seu cos
+    masked = mask_players(per_frame, players) if players else 0
     # Radi de cerca en px del vídeo original (~60 px a l'amplada de processament)
     tracks = link_tracks(per_frame, gate=60.0 / scale)
     path = ball_path(tracks)
-    players = tracker.tracks()
+    if masked:
+        progress(f"  {masked} candidats a pilota descartats per ser dins el cos d'un jugador")
     progress(f"Pilota: {len(tracks)} trajectòries, {len(path)} posicions · jugadors: {len(players)} seguiments")
 
     # --- Contactes i jugades -------------------------------------------------
@@ -127,6 +132,10 @@ def analyze(pkg: AnalysisPackage, video: str, opts: Options, progress: Callable[
     report = match_acta(segs, pkg.rallies) if pkg.rallies else {}
     segs = [s for s in segs if s.set is not None or not pkg.rallies]
     progress(f"Contactes: {len(contacts)} · jugades: {len(segs)}")
+    if not pkg.rallies:
+        progress("  (El paquet no porta l'acta: sense el nombre de punts, el servidor ni el guanyador de cada jugada.)")
+    dur = max(end - opts.start, 1e-6)
+    progress(f"Temps de càlcul: {time.time() - t0:.0f} s ({(time.time() - t0) / dur:.1f}× la durada del tram)")
     for set_no, r in sorted(report.items()):
         progress(f"  Set {set_no}: {r['found']} jugades trobades, {r['expected']} segons l'acta" + (f" (en falten {r['missing']})" if r["missing"] else ""))
 

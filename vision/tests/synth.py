@@ -67,9 +67,39 @@ def ball_flights(contacts_uvz: list[tuple[float, float, float, float]]) -> list[
     return out
 
 
-def render_video(path: str, P: np.ndarray, rallies: list[list[tuple[float, float, float, float]]], duration: float, rate: int = 22050) -> list[float]:
+# Jugadors sintètics: cos (rectangle) que es desplaça poc a poc i un braç (taca de la mida
+# de la pilota) que es mou de pressa, com els braços i el cap dels jugadors reals: és el
+# que confon el detector de pilota per moviment.
+PEOPLE = [(u, v) for v in (1.5, 4.0, 7.0) for u in (1.5, 7.5)] + [(u, v) for v in (11.0, 14.0, 16.5) for u in (1.5, 7.5)]
+
+
+def person_at(P: np.ndarray, k: int, t: float):
+    u0, v0 = PEOPLE[k]
+    u = u0 + 0.8 * math.sin(0.4 * t + k)
+    v = v0 + 0.5 * math.cos(0.3 * t + 2 * k)
+    feet = project(P, np.array([[u, v, 0]]))[0]
+    head = project(P, np.array([[u, v, 1.85]]))[0]
+    h = feet[1] - head[1]
+    w = 0.32 * h
+    box = (feet[0] - w / 2, head[1], feet[0] + w / 2, feet[1])
+    # Braç: oscil·la ràpid a l'altura de les espatlles
+    arm = project(P, np.array([[u + 0.45 * math.sin(7 * t + k), v, 1.4 + 0.25 * math.sin(11 * t + 3 * k)]]))[0]
+    hand = np.linalg.norm(project(P, np.array([[u + 0.21, v, 1.4]]))[0] - project(P, np.array([[u, v, 1.4]]))[0])
+    return box, arm, hand
+
+
+def render_video(
+    path: str,
+    P: np.ndarray,
+    rallies: list[list[tuple[float, float, float, float]]],
+    duration: float,
+    rate: int = 22050,
+    people: bool = False,
+    end_whistle: bool = False,
+) -> list[float]:
     """Vídeo de prova amb àudio: per cada jugada, un xiulet 2 s abans del servei, la pilota volant
-    entre els contactes i un cop sonor a cada contacte. Retorna els temps reals dels contactes."""
+    entre els contactes i un cop sonor a cada contacte (i, si es demana, jugadors que es mouen i un
+    xiulet de final de jugada). Retorna els temps reals dels contactes."""
     bg = court_image(P)
     positions = {}
     contact_times = []
@@ -86,9 +116,9 @@ def render_video(path: str, P: np.ndarray, rallies: list[list[tuple[float, float
         k = np.arange(int(0.03 * rate))
         audio[i : i + len(k)] += (0.6 * np.exp(-k / (0.004 * rate)) * rng.normal(0, 1, len(k))).astype(np.float32)
     for contacts in rallies:
-        tw = contacts[0][0] - 2.0
         k = np.arange(int(0.6 * rate))
-        audio[int(tw * rate) : int(tw * rate) + len(k)] += (0.3 * np.sin(2 * math.pi * 3200 * k / rate)).astype(np.float32)
+        for tw in [contacts[0][0] - 2.0] + ([contacts[-1][0] + 0.8] if end_whistle else []):
+            audio[int(tw * rate) : int(tw * rate) + len(k)] += (0.3 * np.sin(2 * math.pi * 3200 * k / rate)).astype(np.float32)
     audio = np.clip(audio, -1, 1)
 
     with av.open(path, "w") as c:
@@ -100,6 +130,12 @@ def render_video(path: str, P: np.ndarray, rallies: list[list[tuple[float, float
         aus.layout = "mono"
         for fi in range(int(duration * 30)):
             img = bg.copy()
+            if people:
+                for pk in range(len(PEOPLE)):
+                    (x1, y1, x2, y2), arm, hand = person_at(P, pk, fi / 30)
+                    cv2.rectangle(img, (int(x1), int(y1 + 0.15 * (y2 - y1))), (int(x2), int(y2)), (35, 35, 120), -1)
+                    cv2.circle(img, (int((x1 + x2) / 2), int(y1 + 0.08 * (y2 - y1))), int(0.12 * (y2 - y1)), (90, 140, 200), -1)
+                    cv2.circle(img, (int(arm[0]), int(arm[1])), max(2, int(hand / 2)), (90, 140, 200), -1)
             if fi in positions:
                 u, v, z = positions[fi]
                 x, y = project(P, np.array([[u, v, z]]))[0]
@@ -127,3 +163,23 @@ def render_video(path: str, P: np.ndarray, rallies: list[list[tuple[float, float
 
 def calibration(P: np.ndarray) -> Calibration:
     return Calibration.from_json(calibration_json(P))
+
+
+class StubDetector:
+    """Detector de persones de prova: retorna els requadres dels jugadors sintètics."""
+
+    device = "stub"
+
+    def __init__(self, P: np.ndarray):
+        self.P = P
+
+    def __call__(self, frame, t: float):
+        from vidia_vision.players import Detection
+
+        out = []
+        for k in range(len(PEOPLE)):
+            box, _, _ = person_at(self.P, k, t)
+            x1, y1, x2, y2 = box
+            w = x2 - x1
+            out.append(Detection(t, (x1 - 0.6 * w, y1 - 0.05 * (y2 - y1), x2 + 0.6 * w, y2), 0.95))
+        return out

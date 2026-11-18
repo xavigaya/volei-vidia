@@ -9,7 +9,10 @@ la segmentació i dona a cada jugada el servidor i el guanyador.
 
 from __future__ import annotations
 
+import bisect
 from dataclasses import dataclass, field
+
+import numpy as np
 
 from .contacts import Contact
 from .package import Rally as ActaRally
@@ -33,28 +36,55 @@ class Segment:
         return len(self.contacts) + (1.5 if self.whistle else 0)
 
 
-def segment(contacts: list[Contact], whistles: list[tuple[float, float]], gap: float = 4.0, min_contacts: int = 2) -> list[Segment]:
-    segs: list[Segment] = []
-    cur: Segment | None = None
+def segment(
+    contacts: list[Contact],
+    whistles: list[tuple[float, float]],
+    gap: float = 4.0,
+    min_contacts: int = 2,
+    max_len: float = 40.0,
+) -> list[Segment]:
+    """Agrupa els contactes en jugades.
+
+    Es talla quan passen més de `gap` segons sense contactes o quan l'àrbitre xiula
+    entre dos contactes (final del punt o autorització del servei). Una jugada ha de
+    tenir almenys `min_contacts` contactes, un d'ells confirmat pel so. Les jugades
+    més llargues que `max_len` (impossibles) es tallen pel buit més gran.
+    """
     w_starts = sorted(a for a, _ in whistles)
-    wi = 0
+
+    def whistle_between(t0: float, t1: float) -> bool:
+        i = bisect.bisect_right(w_starts, t0 + 0.3)
+        return i < len(w_starts) and w_starts[i] < t1 - 0.3
+
+    def whistle_before(t: float) -> bool:
+        i = bisect.bisect_right(w_starts, t) - 1
+        return i >= 0 and t - w_starts[i] < 12
+
+    groups: list[list[int]] = []
     for i, c in enumerate(contacts):
-        # Xiulet entre l'últim contacte i aquest: comença una jugada nova
-        whistle_before = False
-        while wi < len(w_starts) and w_starts[wi] <= c.t:
-            if cur is None or w_starts[wi] > cur.end:
-                whistle_before = c.t - w_starts[wi] < 12
-            wi += 1
-        if cur is None or c.t - cur.end > gap or (whistle_before and c.t - cur.end > 1.0):
-            if cur is not None:
-                segs.append(cur)
-            cur = Segment(start=c.t, end=c.t, contacts=[i], whistle=whistle_before)
+        if groups and c.t - contacts[groups[-1][-1]].t <= gap and not whistle_between(contacts[groups[-1][-1]].t, c.t):
+            groups[-1].append(i)
         else:
-            cur.contacts.append(i)
-            cur.end = c.t
-    if cur is not None:
-        segs.append(cur)
-    return [s for s in segs if len(s.contacts) >= min_contacts or s.whistle]
+            groups.append([i])
+
+    # Jugades impossiblement llargues: es parteixen pel buit més gran
+    def split(g: list[int]) -> list[list[int]]:
+        if len(g) < 2 or contacts[g[-1]].t - contacts[g[0]].t <= max_len:
+            return [g]
+        gaps = [contacts[g[k + 1]].t - contacts[g[k]].t for k in range(len(g) - 1)]
+        k = int(np.argmax(gaps))
+        return split(g[: k + 1]) + split(g[k + 1 :])
+
+    segs: list[Segment] = []
+    for g in [h for g in groups for h in split(g)]:
+        if not any(contacts[i].audio for i in g):
+            continue
+        wb = whistle_before(contacts[g[0]].t)
+        # Un servei directe (ace o error) té un sol contacte: compta si hi ha xiulet de servei
+        if len(g) < min_contacts and not wb:
+            continue
+        segs.append(Segment(start=contacts[g[0]].t, end=contacts[g[-1]].t, contacts=g, whistle=wb))
+    return segs
 
 
 def assign_sets(segs: list[Segment], set_at) -> None:

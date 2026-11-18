@@ -58,6 +58,8 @@ Opcions útils:
 | `--device cpu` | Força la CPU |
 | `--out fitxer.json` | Nom del fitxer de resultats |
 
+Al final de cada anàlisi es mostra el temps de càlcul respecte a la durada del tram. Amb la GPU, el detector de jugadors treballa en mitja precisió.
+
 Altres ordres: `.\vidia-vision.cmd info partit.mp4` (resolució, fps, durada, àudio).
 
 > Consell per a la primera prova: un tram de 5 minuts amb `--debug-video` i comprovar que la pista verda coincideix amb la real i que la pilota (cercle groc) la segueix bé.
@@ -67,10 +69,10 @@ Altres ordres: `.\vidia-vision.cmd info partit.mp4` (resolució, fps, durada, à
 | Part | Mètode |
 |---|---|
 | Àudio | Flux espectral a 0,8–6 kHz amb llindar adaptatiu (cops) i to sostingut a 2–4,5 kHz (xiulets) |
-| Pilota | Diferència entre tres fotogrames consecutius, taques de la mida esperada segons la calibració, enllaçades en trajectòries |
+| Pilota | Diferència entre tres fotogrames consecutius, taques de la mida esperada segons la calibració, enllaçades en trajectòries. Es descarten les taques dins el cos dels jugadors (braços, cap) i es trien les trajectòries que s'assemblen a un vol lliure, sense solapar-se |
 | Jugadors | Faster R-CNN (torchvision, pesos de COCO) a 5 fps; es descarten les persones fora de la pista (banquetes, àrbitres) amb la calibració; seguiment amb assignació òptima |
 | Contactes | Trencament de la trajectòria (l'ajust parabòlic local falla i la direcció canvia), confirmat pel so d'un cop |
-| Jugades | Xiulet de servei + contactes seguits; si hi ha acta, s'ajusten al nombre de punts de cada set i reben el servidor i el guanyador |
+| Jugades | Contactes seguits, tallats als xiulets i als silencis; cal almenys un contacte confirmat pel so. Si hi ha acta, s'ajusten al nombre de punts de cada set i reben el servidor i el guanyador |
 
 Limitacions d'aquesta primera versió:
 

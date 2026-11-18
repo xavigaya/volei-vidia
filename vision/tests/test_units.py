@@ -115,3 +115,16 @@ def test_load_package_formats(tmp_path):
     assert pkg.set_at(100) == 1 and pkg.set_at(2000) == 2 and pkg.set_at(1) is None
     assert pkg.near_side(2, 2000) == "A"
     assert pkg.rallies[1][0].server_player == 13
+
+
+def test_segment_splits_at_whistle_and_caps_length():
+    from vidia_vision.contacts import Contact
+
+    # Contactes seguits cada 2 s durant 30 s, amb un xiulet al segon 13,0: dues jugades
+    cs = [Contact(10 + 2 * k, 100, 100, 0.9, True, True) for k in range(16)]
+    segs = segment(cs, whistles=[(13.0, 13.5)])
+    assert [(s.start, s.end) for s in segs] == [(10, 12), (14, 40)]
+    # Sense xiulets, una cadena de 90 s es parteix (cap jugada no dura tant)
+    cs = [Contact(k * 1.5 + (5 if k > 30 else 0), 100, 100, 0.9, True, True) for k in range(60)]
+    segs = segment(cs, whistles=[], gap=6)
+    assert len(segs) >= 2 and all(s.end - s.start <= 40 for s in segs)

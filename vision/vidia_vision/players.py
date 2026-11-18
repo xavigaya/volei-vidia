@@ -38,6 +38,10 @@ class PersonDetector:
         self.model = fasterrcnn_resnet50_fpn_v2(weights=weights, box_score_thresh=min_score).eval().to(self.device)
         self.min_score = min_score
         self.input_width = input_width
+        # A la GPU: mitja precisió (gairebé el doble de ràpid a les RTX, sense pèrdua apreciable)
+        self.half = self.device.startswith("cuda")
+        if self.half:
+            torch.backends.cudnn.benchmark = True
 
     def __call__(self, frame_bgr: np.ndarray, t: float) -> list[Detection]:
         torch = self.torch
@@ -50,7 +54,11 @@ class PersonDetector:
             rgb = cv2.resize(rgb, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
         x = torch.from_numpy(np.ascontiguousarray(rgb)).permute(2, 0, 1).float().div(255).to(self.device)
         with torch.inference_mode():
-            out = self.model([x])[0]
+            if self.half:
+                with torch.autocast("cuda", dtype=torch.float16):
+                    out = self.model([x])[0]
+            else:
+                out = self.model([x])[0]
         dets = []
         for box, label, score in zip(out["boxes"].cpu().numpy(), out["labels"].cpu().numpy(), out["scores"].cpu().numpy()):
             if label == 1 and score >= self.min_score:  # 1 = persona a COCO

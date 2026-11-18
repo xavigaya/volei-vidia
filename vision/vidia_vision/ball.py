@@ -132,15 +132,111 @@ def link_tracks(
     return [tr for tr in done if len(tr.points) >= min_len]
 
 
-def ball_path(tracks: list[Track]) -> list[Candidate]:
-    """Una sola posició de la pilota per instant: la de la trajectòria més llarga i consistent."""
-    best: dict[float, tuple[float, Candidate]] = {}
+def mask_players(per_frame: list[list[Candidate]], player_tracks, bucket: float = 0.2) -> int:
+    """Treu els candidats que són dins el cos d'un jugador (braços, cap, cames).
+
+    Es manté la franja per sobre del cap (on es colpeja la pilota en col·locacions,
+    atacs i blocs). Les posicions dels jugadors es detecten menys sovint que els
+    fotogrames: es fa servir la mostra de cada jugador més propera en el temps.
+    Retorna quants candidats s'han tret.
+    """
+    grid: dict[int, list[tuple[float, float, float, float]]] = {}
+    for tr in player_tracks:
+        for smp in tr.samples:
+            grid.setdefault(int(smp.t / bucket), []).append(smp.box)
+    removed = 0
+    for i, cands in enumerate(per_frame):
+        if not cands:
+            continue
+        k = int(cands[0].t / bucket)
+        boxes = grid.get(k, []) + grid.get(k - 1, []) + grid.get(k + 1, [])
+        if not boxes:
+            continue
+        keep = []
+        for c in cands:
+            inside = False
+            for x1, y1, x2, y2 in boxes:
+                h = y2 - y1
+                if x1 <= c.x <= x2 and y1 + 0.12 * h <= c.y <= y2:
+                    inside = True
+                    break
+            if inside:
+                removed += 1
+            else:
+                keep.append(c)
+        per_frame[i] = keep
+    return removed
+
+
+def smoothness(points: list[Candidate], window: int = 7) -> float:
+    """0..1: com d'ajustada a paràboles locals és la trajectòria (1 = vol lliure de la pilota).
+
+    Els braços i els caps es mouen endavant i enrere: l'ajust parabòlic falla.
+    """
+    n = len(points)
+    if n < window:
+        return 0.5
+    t = np.array([p.t for p in points])
+    xy = np.array([[p.x, p.y] for p in points])
+    size = float(np.mean([p.size for p in points]))
+    errs = []
+    for i in range(0, n - window + 1, max(1, window // 2)):
+        tt = t[i : i + window] - t[i]
+        res = 0.0
+        for k in range(2):
+            coef = np.polyfit(tt, xy[i : i + window, k], 2)
+            res += float(np.mean((xy[i : i + window, k] - np.polyval(coef, tt)) ** 2))
+        errs.append(np.sqrt(res / 2))
+    noise = max(1.5, 0.15 * size)
+    return float(1.0 / (1.0 + (np.median(errs) / noise) ** 2))
+
+
+def track_quality(tr: Track) -> float:
+    pts = tr.points
+    n = len(pts)
+    xy = np.array([[p.x, p.y] for p in pts])
+    size = float(np.mean([p.size for p in pts]))
+    extent = float(np.ptp(xy[:, 0]) + np.ptp(xy[:, 1]))
+    # Una pilota en joc recorre molts diàmetres; una taca que tremola no
+    motion = min(1.0, extent / (12 * max(size, 2.0)))
+    return n * float(np.mean([p.score for p in pts])) * motion * smoothness(pts)
+
+
+def ball_path(tracks: list[Track], min_quality: float = 1.0) -> list[Candidate]:
+    """Una sola trajectòria per instant: les trajectòries que no se solapen en el temps i que
+    sumen més qualitat (selecció ponderada d'intervals)."""
+    items = []
     for tr in tracks:
-        q = len(tr.points) * float(np.mean([c.score for c in tr.points]))
-        for c in tr.points:
-            if c.t not in best or best[c.t][0] < q:
-                best[c.t] = (q, c)
-    return [best[t][1] for t in sorted(best)]
+        q = track_quality(tr)
+        if q >= min_quality:
+            items.append((tr.points[0].t, tr.points[-1].t, q, tr))
+    items.sort(key=lambda x: x[1])
+    ends = [x[1] for x in items]
+    import bisect
+
+    best = [0.0] * (len(items) + 1)
+    choice: list[bool] = [False] * len(items)
+    prev = []
+    for j, (st, _, q, _) in enumerate(items):
+        p = bisect.bisect_left(ends, st, 0, j)  # trajectòries que acaben abans que comenci aquesta
+        prev.append(p)
+        take = q + best[p]
+        if take > best[j]:
+            best[j + 1] = take
+            choice[j] = True
+        else:
+            best[j + 1] = best[j]
+    chosen = []
+    j = len(items) - 1
+    while j >= 0:
+        if choice[j] and items[j][2] + best[prev[j]] >= best[j]:
+            chosen.append(items[j][3])
+            j = prev[j] - 1
+        else:
+            j -= 1
+    path = [c for tr in chosen for c in tr.points]
+    path.sort(key=lambda c: c.t)
+    return path
 
 
 def expected_diameter_fn(cal, scale: float):
