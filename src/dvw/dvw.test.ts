@@ -189,6 +189,19 @@ describe('DataVolley', () => {
     expect(imp.warnings).toEqual([]);
   });
 
+  test('les accions després del punt de set no obren el set següent', () => {
+    const rot = ';1;1;;;;1;2;3;4;5;6;11;12;13;14;15;16;';
+    const L = (code: string) => `${code};;;;;;;20.00.00;1${rot}`;
+    const scout: string[] = [];
+    for (let i = 1; i <= 24; i++) scout.push(L(`*p${String(i).padStart(2, '0')}:00`));
+    // Punt de set per atac i, dins la mateixa jugada, una defensa del rival
+    scout.push(L('*04AH#~~~41'), L('a13EH+~~~41'), L('*p25:00'), '**1set;;;;;;;;1;');
+    scout.push(L('a12SM=~~~16A'), L('*p01:00'));
+    const text = ['[3PLAYERS-H]', ...[1, 2, 3, 4, 5, 6].map((n) => `0;${n};${n};${n};;;;;A${n};C${n};N${n};;;2;False;;;`), '[3PLAYERS-V]', ...[11, 12, 13, 14, 15, 16].map((n) => `1;${n};${n};${n - 10};;;;;B${n};C${n};N${n};;;2;False;;;`), '[3SCOUT]', ...scout].join('\n');
+    const imp = dvwToEvents(parseDvw(text));
+    expect(imp.state.sets.map((x) => `${x.home}-${x.away}`)).toEqual(['25-0', '1-0']);
+  });
+
   test('noms i dorsals repetits (SmashVision)', () => {
     expect(normalizeNames(4, 'Player', '4', 'Player')).toEqual({ firstName: 'Jugador 4', lastName: '', nickname: '' });
     expect(normalizeNames(13, 'Mayoral', 'Mayoral', 'Mayoral')).toEqual({ firstName: 'Mayoral', lastName: '', nickname: '' });

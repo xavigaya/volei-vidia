@@ -248,9 +248,13 @@ export function dvwToEvents(dv: ParsedDvw, baseRules: MatchRules = DEFAULT_RULES
   const liberos = { H: dv.players.H.filter((p) => p.libero).map((p) => p.number).slice(0, 2), A: dv.players.A.filter((p) => p.libero).map((p) => p.number).slice(0, 2) };
 
   let lastClock: number | null = null;
+  // El set s'acaba d'acabar i encara no ha arribat la línia de punt ni la marca de final de set
+  let pendingSetEnd = false;
   const push = (ev: MatchEventData, vt: number | null, line: string, clock: number | null = lastClock): boolean => {
     try {
+      const wasInPlay = state.phase === 'in_play';
       state = applyEvent(state, ev);
+      if (wasInPlay && state.phase === 'awaiting_lineup' && ev.type !== 'point') pendingSetEnd = true;
       if (clock != null) lastClock = clock;
       events.push({ ...ev, videoTime: vt, clock });
       return true;
@@ -323,12 +327,19 @@ export function dvwToEvents(dv: ParsedDvw, baseRules: MatchRules = DEFAULT_RULES
 
     // Final de set
     if (/^\*\*\d+set/i.test(code)) {
+      pendingSetEnd = false;
       closeSet(code);
       return;
     }
 
     const isPlayLine = SKILL_RE.test(code) || /^[*a]p\d/.test(code) || /^[*a]c\d/i.test(code) || /^[*a]T$/.test(code);
     if (!isPlayLine) return;
+
+    // Accions que el fitxer posa després de l'acció que tanca el set (dins de
+    // la mateixa jugada): no obren el set següent. El set nou comença després
+    // de la línia de punt o de la marca de final de set.
+    if (pendingSetEnd && !/^[*a]p\d/.test(code)) return;
+    pendingSetEnd = false;
 
     // Línia de punt amb el set ja acabat (p. ex. "ap17:25" després de l'acció
     // que el tanca): no obre un set nou. Només ho fa el primer punt (1:0 / 0:1).
