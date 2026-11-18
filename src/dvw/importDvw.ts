@@ -26,8 +26,31 @@ export function guessTeam(teams: Team[], name: string, code: string): Team | und
   );
 }
 
+interface Created {
+  teams: string[];
+  players: string[];
+  match: string | null;
+}
+
+// Si alguna cosa falla a mig importar, es desfà el que s'havia creat
+// (partit, jugadors i equips nous) perquè no quedin dades a mitges.
 export async function importDvwMatch(dv: ParsedDvw, opts: DvwImportOptions): Promise<{ matchId: string; warnings: string[] }> {
+  const created: Created = { teams: [], players: [], match: null };
+  try {
+    return await importInner(dv, opts, created);
+  } catch (e) {
+    if (created.match) await supabase.from('matches').delete().eq('id', created.match);
+    if (created.players.length) await supabase.from('players').delete().in('id', created.players);
+    if (created.teams.length) await supabase.from('teams').delete().in('id', created.teams);
+    throw e;
+  }
+}
+
+async function importInner(dv: ParsedDvw, opts: DvwImportOptions, created: Created): Promise<{ matchId: string; warnings: string[] }> {
   const imp = dvwToEvents(dv);
+  for (const d of dv.duplicates ?? []) {
+    imp.warnings.push(`${d.side === 'H' ? dv.teams[0].name : dv.teams[1].name}: dorsal ${d.number} repetit (${d.firstName} ${d.lastName}) no importat`);
+  }
   const teamIds: Record<Side, string> = { H: '', A: '' };
 
   // 1. Equips
@@ -53,6 +76,7 @@ export async function importDvwMatch(dv: ParsedDvw, opts: DvwImportOptions): Pro
       .single();
     if (error || !data) throw new Error(error?.message ?? 'team');
     teamIds[side] = (data as { id: string }).id;
+    created.teams.push(teamIds[side]);
   }
   if (teamIds.H === teamIds.A) throw new Error('same_team');
 
@@ -71,14 +95,15 @@ export async function importDvwMatch(dv: ParsedDvw, opts: DvwImportOptions): Pro
         .from('players')
         .insert({
           club_id: opts.clubId,
-          first_name: p.firstName || p.nickname || `#${p.number}`,
-          last_name: p.lastName,
-          nickname: p.nickname || null,
+          first_name: (p.firstName || p.nickname || `Jugador ${p.number}`).slice(0, 80),
+          last_name: p.lastName.slice(0, 120),
+          nickname: p.nickname ? p.nickname.slice(0, 40) : null,
         })
         .select('id')
         .single();
       if (error || !np) throw new Error(error?.message ?? 'player');
       const id = (np as { id: string }).id;
+      created.players.push(id);
       const tp = await supabase.from('team_players').insert({
         team_id: teamIds[side],
         player_id: id,
@@ -122,6 +147,7 @@ export async function importDvwMatch(dv: ParsedDvw, opts: DvwImportOptions): Pro
     .single();
   if (me || !m) throw new Error(me?.message ?? 'match');
   const matchId = (m as { id: string }).id;
+  created.match = matchId;
 
   // 4. Convocatòria
   const mpRows = (['H', 'A'] as Side[]).flatMap((side) =>

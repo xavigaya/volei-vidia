@@ -70,6 +70,8 @@ export interface ParsedDvw {
   sets: { h: number; a: number }[];
   video: string | null;
   scout: DvwLine[];
+  // Jugadors descartats perquè el fitxer repetia el dorsal en el mateix equip
+  duplicates?: (DvwPlayer & { side: Side })[];
 }
 
 // ---------------------------------------------------------------------
@@ -120,6 +122,42 @@ function parseDate(s: string | undefined): string | null {
   return null;
 }
 
+// Noms tal com els escriuen alguns programes:
+//  * "Player;4;Player" (jugador sense identificar) → "Jugador 4"
+//  * "Mayoral;Mayoral;Mayoral" (només un nom repetit) → "Mayoral"
+//  * el sobrenom igual que el nom o el cognom no s'aprofita
+export function normalizeNames(n: number, last: string, first: string, nick: string): { firstName: string; lastName: string; nickname: string } {
+  if (/^(player|jugador|jugadora|unknown)$/i.test(last) && (first === '' || first === String(n) || /^\d+$/.test(first))) {
+    return { firstName: `Jugador ${n}`, lastName: '', nickname: '' };
+  }
+  let firstName = first;
+  let lastName = last;
+  if (firstName && lastName && firstName.toLowerCase() === lastName.toLowerCase()) firstName = '';
+  if (!firstName) {
+    firstName = lastName || nick || `Jugador ${n}`;
+    lastName = '';
+  }
+  const lower = nick.toLowerCase();
+  const nickname = nick && lower !== firstName.toLowerCase() && lower !== lastName.toLowerCase() ? nick : '';
+  return { firstName, lastName, nickname };
+}
+
+// Un sol jugador per dorsal i equip: si el fitxer en repeteix algun, es queda
+// el que surt a les alineacions inicials (o el primer)
+export function uniquePlayers(list: DvwPlayer[]): { players: DvwPlayer[]; dropped: DvwPlayer[] } {
+  const byNumber = new Map<number, DvwPlayer>();
+  const dropped: DvwPlayer[] = [];
+  for (const p of list) {
+    const prev = byNumber.get(p.number);
+    if (!prev) byNumber.set(p.number, p);
+    else if (!prev.starts.some((x) => x != null) && p.starts.some((x) => x != null)) {
+      dropped.push(prev);
+      byNumber.set(p.number, p);
+    } else dropped.push(p);
+  }
+  return { players: list.filter((p) => byNumber.get(p.number) === p), dropped };
+}
+
 function parsePlayers(lines: string[] | undefined): DvwPlayer[] {
   return (lines ?? [])
     .map((l) => l.split(';'))
@@ -127,15 +165,15 @@ function parsePlayers(lines: string[] | undefined): DvwPlayer[] {
     .map((f) => {
       const role = (f[13] ?? '').trim();
       const libero = (f[12] ?? '').trim().toUpperCase() === 'L' || role === '1';
+      const n = num(f[1])!;
+      const names = normalizeNames(n, (f[9] ?? '').trim(), (f[10] ?? '').trim(), (f[11] ?? '').trim());
       return {
-        number: num(f[1])!,
+        number: n,
         starts: [3, 4, 5, 6, 7].map((i) => {
           const v = num(f[i]);
           return v != null && v >= 1 && v <= 6 ? v : null;
         }),
-        lastName: (f[9] ?? '').trim(),
-        firstName: (f[10] ?? '').trim(),
-        nickname: (f[11] ?? '').trim(),
+        ...names,
         position: libero ? 'L' : (ROLE_TO_POS[role] ?? 'U'),
         libero,
       };
@@ -180,7 +218,11 @@ export function parseDvw(text: string): ParsedDvw {
     league: (match[3] ?? '').trim(),
     phase: (match[4] ?? '').trim(),
     teams: [team(teamLines[0], 'Local'), team(teamLines[1], 'Visitant')],
-    players: { H: parsePlayers(sec.get('PLAYERS-H')), A: parsePlayers(sec.get('PLAYERS-V')) },
+    players: { H: uniquePlayers(parsePlayers(sec.get('PLAYERS-H'))).players, A: uniquePlayers(parsePlayers(sec.get('PLAYERS-V'))).players },
+    duplicates: [
+      ...uniquePlayers(parsePlayers(sec.get('PLAYERS-H'))).dropped.map((p) => ({ side: 'H' as Side, ...p })),
+      ...uniquePlayers(parsePlayers(sec.get('PLAYERS-V'))).dropped.map((p) => ({ side: 'A' as Side, ...p })),
+    ],
     sets,
     video: videoLine ? videoLine.replace(/^Camera\d*=/i, '').trim() || null : null,
     scout,

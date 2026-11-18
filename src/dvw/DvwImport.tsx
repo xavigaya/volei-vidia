@@ -45,7 +45,14 @@ export function DvwImport({ onCancel }: { onCancel: () => void }) {
       });
   }, [club.id]);
 
-  const preview = useMemo(() => (dv ? dvwToEvents(dv) : null), [dv]);
+  const preview = useMemo(() => {
+    if (!dv) return null;
+    const r = dvwToEvents(dv);
+    const dups = (dv.duplicates ?? []).map(
+      (d) => `${d.side === 'H' ? dv.teams[0].name : dv.teams[1].name}: dorsal ${d.number} repetit (${d.firstName} ${d.lastName}) no importat`,
+    );
+    return { ...r, warnings: [...dups, ...r.warnings] };
+  }, [dv]);
 
   async function onFile(f: File) {
     setError(null);

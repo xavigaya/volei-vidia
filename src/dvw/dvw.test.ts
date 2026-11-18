@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { decodeDvw, dvwToEvents, encodeLatin1, exportDvw, parseDvw, type ExportInput } from './dvw';
+import { decodeDvw, normalizeNames, dvwToEvents, encodeLatin1, exportDvw, parseDvw, type ExportInput } from './dvw';
 import { DEFAULT_RULES, replay, type MatchEvent, type MatchEventData } from '../engine/match';
 
 const H = { positions: [1, 2, 3, 4, 5, 6], liberos: [10] };
@@ -187,6 +187,17 @@ describe('DataVolley', () => {
     // L'error d'atac que no va decidir el punt es conserva, sense punt
     expect(imp.events.find((e) => e.type === 'action' && e.player === 4)).toMatchObject({ evaluation: '=', noPoint: true });
     expect(imp.warnings).toEqual([]);
+  });
+
+  test('noms i dorsals repetits (SmashVision)', () => {
+    expect(normalizeNames(4, 'Player', '4', 'Player')).toEqual({ firstName: 'Jugador 4', lastName: '', nickname: '' });
+    expect(normalizeNames(13, 'Mayoral', 'Mayoral', 'Mayoral')).toEqual({ firstName: 'Mayoral', lastName: '', nickname: '' });
+    expect(normalizeNames(1, 'Alier', 'Artur', 'Alier')).toEqual({ firstName: 'Artur', lastName: 'Alier', nickname: '' });
+    const text = ['[3PLAYERS-H]', '0;12;8;*;*;*;*;*;x;Gaya;Gaya;;;;False;;;', '0;12;13;1;;;;;y;Masó;Masó;;;;False;;;', '0;7;1;;;;;;z;Vallejo;Pep;;;;False;;;'].join('\n');
+    const dv = parseDvw(text);
+    // Es queda el #12 que surt a les alineacions inicials
+    expect(dv.players.H.map((p) => `${p.number} ${p.firstName}`)).toEqual(['12 Masó', '7 Pep']);
+    expect(dv.duplicates?.map((p) => p.firstName)).toEqual(['Gaya']);
   });
 
   test('codificació Latin-1', () => {
