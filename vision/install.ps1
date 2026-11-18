@@ -14,22 +14,33 @@ Set-Location -Path $PSScriptRoot
 function Step($msg) { Write-Host "`n==> $msg" -ForegroundColor Cyan }
 
 # --- Python ----------------------------------------------------------
-Step "Comprovant Python (cal la 3.10, 3.11 o 3.12)"
+Step "Comprovant Python (cal la 3.10, 3.11, 3.12 o 3.13)"
+$okVersions = @("3.10", "3.11", "3.12", "3.13")
+# Primer el llançador "py" (per versió, de la més nova a la més antiga) i després el "python" del PATH
+$candidates = @()
+foreach ($v in @("3.13", "3.12", "3.11", "3.10")) { $candidates += , @("py", "-$v") }
+$candidates += , @("python")
+$candidates += , @("python3")
 $py = $null
-foreach ($v in @("3.12", "3.11", "3.10")) {
-    try { & py "-$v" -c "import sys" 2>$null; if ($LASTEXITCODE -eq 0) { $py = @("py", "-$v"); break } } catch {}
+foreach ($c in $candidates) {
+    $exe = $c[0]
+    $pre = @($c | Select-Object -Skip 1)
+    try { $ver = (& $exe @pre -c "import sys; print('%d.%d' % sys.version_info[:2])" 2>$null | Select-Object -First 1) } catch { continue }
+    if ($LASTEXITCODE -eq 0 -and $okVersions -contains "$ver") { $py = $c; break }
 }
 if (-not $py) {
-    Write-Host "No s'ha trobat Python 3.10–3.12." -ForegroundColor Yellow
+    Write-Host "No s'ha trobat Python 3.10–3.13." -ForegroundColor Yellow
     Write-Host "Instal·la'l des de https://www.python.org/downloads/windows/ (marca 'Add python.exe to PATH') i torna a executar aquest script."
     exit 1
 }
-& $py[0] $py[1] --version
+$pyExe = $py[0]
+$pyPre = @($py | Select-Object -Skip 1)
+& $pyExe @pyPre --version
 
 # --- Entorn virtual ----------------------------------------------------
 if (-not (Test-Path ".venv")) {
     Step "Creant l'entorn .venv"
-    & $py[0] $py[1] -m venv .venv
+    & $pyExe @pyPre -m venv .venv
 }
 $venvPy = Join-Path $PSScriptRoot ".venv\Scripts\python.exe"
 & $venvPy -m pip install --upgrade pip | Out-Null

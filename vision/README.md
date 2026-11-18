@@ -13,7 +13,7 @@ Eina de **Volei VidIA** que analitza el vídeo d'un partit a l'ordinador del clu
 ## Requisits
 
 - Windows 11 (també funciona a Linux).
-- Python 3.10, 3.11 o 3.12 — <https://www.python.org/downloads/windows/> (marca *Add python.exe to PATH*).
+- Python 3.10, 3.11, 3.12 o 3.13 — <https://www.python.org/downloads/windows/> (marca *Add python.exe to PATH*).
 - GPU NVIDIA amb el controlador actualitzat (la RTX 3070 va bé). Sense GPU també funciona, però la detecció de jugadors és molt més lenta.
 - Uns 6 GB d'espai lliure (PyTorch i els models).
 
