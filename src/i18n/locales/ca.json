@@ -814,7 +814,8 @@
       "systems": "Sistema de joc",
       "reception": "Recepció",
       "sheet": "Verificació amb l'acta",
-      "calibration": "Calibració del vídeo"
+      "calibration": "Calibració del vídeo",
+      "review": "Revisió de jugades"
     },
     "systemNames": {
       "51": "5-1 (S-OH-MB-OPP)",
@@ -1027,6 +1028,69 @@
       "help": "Fitxer per a l'eina local d'anàlisi de vídeo (vidia-vision): calibració, formacions, convocatòria, sistemes, acta i accions amb el seu temps. No inclou el vídeo ni els noms dels jugadors.",
       "done": "Paquet exportat. Analitza'l amb: vidia-vision.cmd analyze paquet.json --video partit.mp4",
       "noCalibration": "Paquet exportat, però sense calibració: calibra el vídeo abans d'analitzar-lo."
+    },
+    "review": {
+      "section": "Revisió de jugades",
+      "help": "Importa el fitxer de deteccions de vidia-vision i revisa les jugades sobre el vídeo: confirma les correctes, descarta les falses, ajusta'n l'inici i el final i afegeix les que falten. La revisió es desa sola i serveix de referència per millorar l'eina.",
+      "import": "Importa les deteccions (JSON)",
+      "reimport": "Importa'n unes altres",
+      "importing": "Important…",
+      "imported": "S'han importat {{count}} jugades.",
+      "openLocal": "Obre el vídeo local",
+      "export": "Exporta la revisió (JSON)",
+      "replace": "Ja hi ha una revisió feta. Si importes unes deteccions noves, es perdrà. Vols continuar?",
+      "importErrors": {
+        "json": "El fitxer no és un JSON vàlid.",
+        "format": "El fitxer no és de deteccions de vidia-vision.",
+        "no_rallies": "El fitxer no té cap jugada."
+      },
+      "missingMigration": "Per revisar les jugades cal executar la migració supabase/migrations/0017_vision_reviews.sql.",
+      "empty": "Encara no s'han importat deteccions per a aquest partit. Analitza el vídeo amb vidia-vision i importa el fitxer .deteccions.json.",
+      "noVideo": "Aquest partit no té vídeo de YouTube: obre el vídeo local (el mateix que s'ha analitzat).",
+      "saving": {
+        "pending": "Canvis pendents de desar…",
+        "saving": "Desant…",
+        "error": "No s'ha pogut desar."
+      },
+      "sum": {
+        "detected": "detectades",
+        "ok": "confirmades",
+        "rejected": "descartades",
+        "added": "afegides",
+        "pending": "pendents",
+        "precision": "Encert",
+        "recall": "Trobades",
+        "precisionHelp": "De les jugades detectades que ja has revisat, quantes eren bones.",
+        "recallHelp": "De les jugades reals (confirmades + afegides), quantes havia trobat l'eina."
+      },
+      "point": "punt {{n}}",
+      "discarded": "descartada",
+      "manual": "afegida a mà",
+      "manualShort": "a mà",
+      "adjusted": "ajustada",
+      "status": {
+        "pending": "Pendent",
+        "ok": "Confirmada",
+        "rejected": "Descartada"
+      },
+      "actaInfo": "Acta: {{score}} · serveix {{server}} (núm. {{player}}) · guanya {{winner}}",
+      "detInfo": "{{contacts}} contactes ({{audio}} amb so) · pilota sobre la xarxa: {{net}}",
+      "whistle": "xiulet",
+      "play": "Reprodueix",
+      "confirm": "Confirma",
+      "reject": "Descarta",
+      "remove": "Elimina",
+      "undo": "Torna a pendent",
+      "setStart": "Inici aquí",
+      "setEnd": "Final aquí",
+      "resetBounds": "Recupera l'inici i el final detectats",
+      "add": "Afegeix una jugada aquí",
+      "addedHelp": "Jugada afegida al moment actual (6 s). Ajusta'n el final amb «Final aquí».",
+      "sound": "so",
+      "ball": "pilota",
+      "keys": "Teclat: Retorn confirma · Supr descarta · ←/→ jugada anterior/següent · P reprodueix · Espai pausa · I/F inici/final aquí · A afegeix · ,/. ±2 s",
+      "allSets": "Tots els sets",
+      "onlyPending": "Només pendents"
     }
   }
 }

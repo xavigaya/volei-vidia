@@ -836,3 +836,23 @@ input.search { max-width: 260px; }
 .cal-sets-table td { padding: 3px 4px; }
 .cal-sets-table select { width: auto; }
 .cal-time { width: 90px; min-height: 36px; padding: 4px 8px; }
+/* Revisió de jugades (etapa 1.4) */
+.rv-toolbar { gap: 8px; align-items: center; }
+.rv-summary { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
+.rv-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+@media (max-width: 960px) { .rv-layout { grid-template-columns: 1fr; } }
+.rv-current-head { gap: 10px; align-items: baseline; }
+.rv-buttons { gap: 6px; }
+.rv-contacts { display: flex; flex-wrap: wrap; gap: 4px; }
+.rv-contact { display: inline-flex; gap: 4px; align-items: baseline; padding: 2px 8px; }
+.rv-contact.audio { border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); }
+.rv-contact.on { background: var(--accent); color: var(--accent-contrast); }
+.rv-list-col select { width: auto; }
+.rv-list { list-style: none; margin: 0; padding: 0; max-height: 70vh; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+.rv-item { width: 100%; display: grid; grid-template-columns: 18px 60px 1fr auto; gap: 6px; align-items: baseline; text-align: left; font: inherit; padding: 6px 10px; border: 0; border-bottom: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; }
+.rv-item.on { background: color-mix(in srgb, var(--brand) 14%, var(--surface)); }
+.rv-item.rv-st-ok .rv-mark { color: var(--ok); font-weight: 700; }
+.rv-item.rv-st-rejected { opacity: 0.55; }
+.rv-item.rv-st-rejected .rv-mark { color: var(--danger); font-weight: 700; }
+.badge.rv-st-ok { background: color-mix(in srgb, var(--ok) 15%, var(--surface)); color: var(--ok); }
+.badge.rv-st-rejected { background: color-mix(in srgb, var(--danger) 12%, var(--surface)); color: var(--danger); }

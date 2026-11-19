@@ -814,7 +814,8 @@
       "systems": "Sistema de juego",
       "reception": "Recepción",
       "sheet": "Verificación con el acta",
-      "calibration": "Calibración del vídeo"
+      "calibration": "Calibración del vídeo",
+      "review": "Revisión de jugadas"
     },
     "systemNames": {
       "51": "5-1 (S-OH-MB-OPP)",
@@ -1027,6 +1028,69 @@
       "help": "Archivo para la herramienta local de análisis de vídeo (vidia-vision): calibración, formaciones, convocatoria, sistemas, acta y acciones con su tiempo. No incluye el vídeo ni los nombres de los jugadores.",
       "done": "Paquete exportado. Analízalo con: vidia-vision.cmd analyze paquete.json --video partido.mp4",
       "noCalibration": "Paquete exportado, pero sin calibración: calibra el vídeo antes de analizarlo."
+    },
+    "review": {
+      "section": "Revisión de jugadas",
+      "help": "Importa el archivo de detecciones de vidia-vision y revisa las jugadas sobre el vídeo: confirma las correctas, descarta las falsas, ajusta su inicio y final y añade las que faltan. La revisión se guarda sola y sirve de referencia para mejorar la herramienta.",
+      "import": "Importa las detecciones (JSON)",
+      "reimport": "Importa otras",
+      "importing": "Importando…",
+      "imported": "Se han importado {{count}} jugadas.",
+      "openLocal": "Abre el vídeo local",
+      "export": "Exporta la revisión (JSON)",
+      "replace": "Ya hay una revisión hecha. Si importas unas detecciones nuevas, se perderá. ¿Quieres continuar?",
+      "importErrors": {
+        "json": "El archivo no es un JSON válido.",
+        "format": "El archivo no es de detecciones de vidia-vision.",
+        "no_rallies": "El archivo no tiene ninguna jugada."
+      },
+      "missingMigration": "Para revisar las jugadas hay que ejecutar la migración supabase/migrations/0017_vision_reviews.sql.",
+      "empty": "Todavía no se han importado detecciones para este partido. Analiza el vídeo con vidia-vision e importa el archivo .deteccions.json.",
+      "noVideo": "Este partido no tiene vídeo de YouTube: abre el vídeo local (el mismo que se ha analizado).",
+      "saving": {
+        "pending": "Cambios pendientes de guardar…",
+        "saving": "Guardando…",
+        "error": "No se ha podido guardar."
+      },
+      "sum": {
+        "detected": "detectadas",
+        "ok": "confirmadas",
+        "rejected": "descartadas",
+        "added": "añadidas",
+        "pending": "pendientes",
+        "precision": "Acierto",
+        "recall": "Encontradas",
+        "precisionHelp": "De las jugadas detectadas que ya has revisado, cuántas eran buenas.",
+        "recallHelp": "De las jugadas reales (confirmadas + añadidas), cuántas había encontrado la herramienta."
+      },
+      "point": "punto {{n}}",
+      "discarded": "descartada",
+      "manual": "añadida a mano",
+      "manualShort": "a mano",
+      "adjusted": "ajustada",
+      "status": {
+        "pending": "Pendiente",
+        "ok": "Confirmada",
+        "rejected": "Descartada"
+      },
+      "actaInfo": "Acta: {{score}} · saca {{server}} (n.º {{player}}) · gana {{winner}}",
+      "detInfo": "{{contacts}} contactos ({{audio}} con sonido) · balón sobre la red: {{net}}",
+      "whistle": "silbato",
+      "play": "Reproduce",
+      "confirm": "Confirma",
+      "reject": "Descarta",
+      "remove": "Elimina",
+      "undo": "Vuelve a pendiente",
+      "setStart": "Inicio aquí",
+      "setEnd": "Final aquí",
+      "resetBounds": "Recupera el inicio y el final detectados",
+      "add": "Añade una jugada aquí",
+      "addedHelp": "Jugada añadida en el momento actual (6 s). Ajusta su final con «Final aquí».",
+      "sound": "sonido",
+      "ball": "balón",
+      "keys": "Teclado: Intro confirma · Supr descarta · ←/→ jugada anterior/siguiente · P reproduce · Espacio pausa · I/F inicio/final aquí · A añade · ,/. ±2 s",
+      "allSets": "Todos los sets",
+      "onlyPending": "Solo pendientes"
     }
   }
 }

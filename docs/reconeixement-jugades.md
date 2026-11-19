@@ -1,6 +1,6 @@
 # Reconeixement de jugades a partir del vídeo — Document de disseny
 
-> Branca: `reconeixement-jugades` · Estat: **etapes 0.1, 0.2, 1.1 i 1.2 fetes** (sistemes de joc, recepció, acta, suggeriments, calibració i eina local d'anàlisi) · Data: novembre 2026
+> Branca: `reconeixement-jugades` · Estat: **etapes 0.1, 0.2, 1.1 i 1.2 fetes; 1.4 en curs** (revisió de jugades feta; falta la codificació assistida de les accions) · Data: novembre 2026
 
 ## 1. Objectiu
 
@@ -345,6 +345,17 @@ Les propostes es desen al núvol perquè es puguin revisar des de la tauleta. Le
 - **Propostes** (eina → app): llista d'accions proposades amb temps, confiança per camp i, opcionalment, temps reajustats d'accions existents.
 
 Tots dos en JSON amb número de versió del format.
+
+### 8.3 bis Revisió de jugades (etapa 1.4, primera part)
+
+Apartat *Revisió de jugades* de la pestanya *Anàlisi assistida* (migració `0017_vision_reviews.sql`):
+
+- S'importa el fitxer `.deteccions.json` de vidia-vision. Només es desen les jugades i els seus contactes (~250 KB per partit), no les posicions de la pilota ni dels jugadors.
+- Cada jugada es revisa sobre el vídeo (YouTube del partit o el fitxer local): confirmar, descartar, ajustar inici i final al moment actual del vídeo i afegir les que falten. Teclat: Retorn, Supr, ←/→, P, Espai, I/F, A, `,`/`.`.
+- Les jugades no descartades es numeren dins de cada set i es lliguen amb l'acta (marcador, servidor i guanyador de cada punt), de manera que en descartar-ne o afegir-ne una es renumeren les següents.
+- Els contactes de la jugada es mostren amb una proposta de fonament segons l'ordre dels tocs (S, R, E, A, B, D); un toc salta el vídeo a aquell contacte.
+- Resum: detectades, confirmades, descartades, afegides, pendents, **encert** (confirmades / revisades) i **trobades** (confirmades / reals).
+- La revisió es desa sola i s'exporta en JSON (`volei-vidia/rally-review`): és la referència per mesurar i ajustar l'eina.
 
 ### 8.4 Cua de revisió
 

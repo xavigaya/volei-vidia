@@ -814,7 +814,8 @@
       "systems": "Game system",
       "reception": "Reception",
       "sheet": "Scoresheet check",
-      "calibration": "Video calibration"
+      "calibration": "Video calibration",
+      "review": "Rally review"
     },
     "systemNames": {
       "51": "5-1 (S-OH-MB-OPP)",
@@ -1027,6 +1028,69 @@
       "help": "File for the local video analysis tool (vidia-vision): calibration, lineups, roster, systems, scoresheet and actions with their time. It does not include the video or player names.",
       "done": "Package exported. Analyse it with: vidia-vision.cmd analyze package.json --video match.mp4",
       "noCalibration": "Package exported, but without calibration: calibrate the video before analysing it."
+    },
+    "review": {
+      "section": "Rally review",
+      "help": "Import the vidia-vision detections file and review the rallies on the video: confirm the right ones, discard false ones, adjust their start and end and add the missing ones. The review saves itself and serves as a reference to improve the tool.",
+      "import": "Import detections (JSON)",
+      "reimport": "Import others",
+      "importing": "Importing…",
+      "imported": "{{count}} rallies imported.",
+      "openLocal": "Open local video",
+      "export": "Export review (JSON)",
+      "replace": "There is already a review. Importing new detections will discard it. Continue?",
+      "importErrors": {
+        "json": "The file is not valid JSON.",
+        "format": "The file is not a vidia-vision detections file.",
+        "no_rallies": "The file has no rallies."
+      },
+      "missingMigration": "To review rallies, run the migration supabase/migrations/0017_vision_reviews.sql.",
+      "empty": "No detections imported for this match yet. Analyse the video with vidia-vision and import the .deteccions.json file.",
+      "noVideo": "This match has no YouTube video: open the local video (the one that was analysed).",
+      "saving": {
+        "pending": "Unsaved changes…",
+        "saving": "Saving…",
+        "error": "Could not save."
+      },
+      "sum": {
+        "detected": "detected",
+        "ok": "confirmed",
+        "rejected": "discarded",
+        "added": "added",
+        "pending": "pending",
+        "precision": "Precision",
+        "recall": "Found",
+        "precisionHelp": "Of the detected rallies you have reviewed, how many were right.",
+        "recallHelp": "Of the real rallies (confirmed + added), how many the tool had found."
+      },
+      "point": "rally {{n}}",
+      "discarded": "discarded",
+      "manual": "added manually",
+      "manualShort": "manual",
+      "adjusted": "adjusted",
+      "status": {
+        "pending": "Pending",
+        "ok": "Confirmed",
+        "rejected": "Discarded"
+      },
+      "actaInfo": "Scoresheet: {{score}} · {{server}} serves (#{{player}}) · {{winner}} wins",
+      "detInfo": "{{contacts}} contacts ({{audio}} with sound) · ball above the net: {{net}}",
+      "whistle": "whistle",
+      "play": "Play",
+      "confirm": "Confirm",
+      "reject": "Discard",
+      "remove": "Remove",
+      "undo": "Back to pending",
+      "setStart": "Start here",
+      "setEnd": "End here",
+      "resetBounds": "Restore detected start and end",
+      "add": "Add a rally here",
+      "addedHelp": "Rally added at the current time (6 s). Adjust its end with “End here”.",
+      "sound": "sound",
+      "ball": "ball",
+      "keys": "Keyboard: Enter confirms · Del discards · ←/→ previous/next rally · P plays · Space pauses · I/F start/end here · A adds · ,/. ±2 s",
+      "allSets": "All sets",
+      "onlyPending": "Pending only"
     }
   }
 }

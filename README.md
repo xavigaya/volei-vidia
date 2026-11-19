@@ -126,6 +126,10 @@ Per fer-ho servir en un pavelló sense cobertura: obre el partit abans de sortir
 - **Eina local `vidia-vision`** (carpeta `vision/`, instruccions a `vision/README.md`): analitza el vídeo original a l'ordinador del club (Windows 11, GPU NVIDIA) i detecta cops i xiulets, la pilota, els jugadors a la pista, els contactes i les jugades (amb el servidor i el guanyador de l'acta). S'instal·la amb `install.ps1`.
 - A *Anàlisi assistida*, **Exporta el paquet d'anàlisi**: el fitxer que necessita l'eina (sense vídeo ni noms de jugadors).
 
+**Reconeixement de jugades — Etapa 1.4 (primera part)**
+
+- **Revisió de jugades** (pestanya *Anàlisi assistida*, migració `0017_vision_reviews.sql`): s'importen les deteccions de vidia-vision i es revisa cada jugada sobre el vídeo (confirmar, descartar, ajustar inici i final, afegir les que falten), amb teclat o tàctil. Cada jugada es lliga amb el punt de l'acta. Resum d'encert i exportació de la revisió en JSON.
+
 ## Tecnologia
 
 - React + TypeScript + Vite (una sola base de codi per a totes les plataformes).
