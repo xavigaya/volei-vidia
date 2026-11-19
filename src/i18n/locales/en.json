@@ -1016,7 +1016,11 @@
       "confirmDelete": "Delete the calibration starting at {{time}}?",
       "savedList": "Saved calibrations",
       "fromLabel": "From {{time}}",
-      "segmentsHelp": "If the camera moves during the match, add a new calibration from that moment."
+      "segmentsHelp": "If the camera moves during the match, add a new calibration from that moment.",
+      "nearTeam": "Team near the camera",
+      "setStart": "Start in video",
+      "useFrameTime": "Use the current frame time",
+      "setStartHelp": "Optional but recommended: the video time at which each set starts (first serve). The analysis tool then knows which set each rally belongs to and can link it with the scoresheet."
     },
     "package": {
       "export": "Export analysis package",

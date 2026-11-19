@@ -1016,7 +1016,11 @@
       "confirmDelete": "Vols eliminar la calibració que comença a {{time}}?",
       "savedList": "Calibracions desades",
       "fromLabel": "Des de {{time}}",
-      "segmentsHelp": "Si la càmera es mou durant el partit, afegeix una calibració nova a partir d'aquell moment."
+      "segmentsHelp": "Si la càmera es mou durant el partit, afegeix una calibració nova a partir d'aquell moment.",
+      "nearTeam": "Equip a prop de la càmera",
+      "setStart": "Inici al vídeo",
+      "useFrameTime": "Fes servir el moment del fotograma actual",
+      "setStartHelp": "Opcional però recomanat: el moment del vídeo en què comença cada set (primer servei). Així l'eina d'anàlisi sap a quin set és cada jugada i la pot lligar amb l'acta."
     },
     "package": {
       "export": "Exporta el paquet d'anàlisi",

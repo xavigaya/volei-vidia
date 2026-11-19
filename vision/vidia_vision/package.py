@@ -34,6 +34,9 @@ class AnalysisPackage:
     events: list[dict] = field(default_factory=list)
     # Seqüència de punts de l'acta, per set
     rallies: dict[int, list[Rally]] = field(default_factory=dict)
+    # Moment del vídeo (s) en què comença cada set: de la calibració, de l'opció
+    # --set-starts o de les alineacions codificades amb temps
+    set_starts: dict[int, float] = field(default_factory=dict)
 
     @property
     def video_name(self) -> str | None:
@@ -41,7 +44,14 @@ class AnalysisPackage:
         return v.get("localName") if isinstance(v, dict) else v
 
     def set_at(self, t: float) -> int | None:
-        """Set que es juga en un instant del vídeo, segons les accions codificades amb temps."""
+        """Set que es juga en un instant del vídeo: segons l'inici de cada set o, si no se sap,
+        segons les accions codificades amb temps."""
+        if self.set_starts:
+            cur = None
+            for n, st in sorted(self.set_starts.items(), key=lambda x: x[1]):
+                if st <= t:
+                    cur = n
+            return cur
         best: tuple[float, int] | None = None
         for e in self.events:
             vt = e.get("videoTime")
@@ -50,6 +60,12 @@ class AnalysisPackage:
             if best is None or vt >= best[0]:
                 best = (vt, int(e.get("set", 0)))
         return best[1] if best else None
+
+    def set_bounds(self, n: int) -> tuple[float | None, float | None]:
+        """(inici, final) del set n al vídeo, si se saben. El final és l'inici del set següent."""
+        st = self.set_starts.get(n)
+        nxt = self.set_starts.get(n + 1)
+        return st, nxt
 
     def near_side(self, set_number: int | None, t: float) -> str:
         from .calibration import calibration_at
@@ -91,6 +107,18 @@ def load_package(path: str | Path) -> AnalysisPackage:
             ]
     else:
         raise ValueError(f"format desconegut: {fmt!r} (cal un paquet d'anàlisi o una calibració de l'app)")
+    # Inici de cada set al vídeo: de la calibració (apartat Calibració de l'app) o de les
+    # alineacions codificades amb un temps de vídeo real (> 0)
+    for c in data.get("calibrations", []) or []:
+        for k, v in (c.get("setStarts") or {}).items():
+            if isinstance(v, (int, float)):
+                pkg.set_starts[int(k)] = float(v)
+    if not pkg.set_starts:
+        for e in pkg.events:
+            # Una alineació al segon 0 només té sentit per al primer set (si no, és que es va entrar sense vídeo)
+            n = int(e.get("set", 0))
+            if e.get("type") == "lineup" and isinstance(e.get("videoTime"), (int, float)) and (e["videoTime"] > 0 or n == 1):
+                pkg.set_starts.setdefault(int(e.get("set", 0)), float(e["videoTime"]))
     if not pkg.calibrations:
         raise ValueError("el fitxer no té cap calibració: calibra el vídeo a l'app (Anàlisi assistida → Calibració del vídeo)")
     if not any(c.ground is not None for c in pkg.calibrations):

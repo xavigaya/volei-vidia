@@ -129,15 +129,27 @@ def analyze(pkg: AnalysisPackage, video: str, opts: Options, progress: Callable[
     attribute(contacts, players, path, near_for)
     segs = segment(contacts, aev.whistles)
     assign_sets(segs, pkg.set_at)
-    report = match_acta(segs, pkg.rallies) if pkg.rallies else {}
+    # Final del vídeo: l'últim set acaba amb el vídeo
+    def bounds(n: int):
+        st, en = pkg.set_bounds(n)
+        return st, (en if en is not None or st is None else info.duration)
+
+    report = match_acta(segs, pkg.rallies, bounds=bounds, analysed=(opts.start, end)) if pkg.rallies else {}
     segs = [s for s in segs if s.set is not None or not pkg.rallies]
     progress(f"Contactes: {len(contacts)} · jugades: {len(segs)}")
     if not pkg.rallies:
         progress("  (El paquet no porta l'acta: sense el nombre de punts, el servidor ni el guanyador de cada jugada.)")
     dur = max(end - opts.start, 1e-6)
     progress(f"Temps de càlcul: {time.time() - t0:.0f} s ({(time.time() - t0) / dur:.1f}× la durada del tram)")
+    if pkg.rallies and not pkg.set_starts:
+        progress("  No se sap on comença cada set al vídeo: indica-ho a l'app (Calibració del vídeo) o amb --set-starts.")
     for set_no, r in sorted(report.items()):
-        progress(f"  Set {set_no}: {r['found']} jugades trobades, {r['expected']} segons l'acta" + (f" (en falten {r['missing']})" if r["missing"] else ""))
+        if r.get("partial") and r["missing"] is None and r["kept"] == r["found"] and not any(s.index is not None and s.set == set_no for s in segs):
+            progress(f"  Set {set_no}: {r['found']} jugades trobades (el tram no inclou l'inici del set: no es lliguen amb l'acta)")
+        elif r.get("partial"):
+            progress(f"  Set {set_no}: {r['found']} jugades trobades i lligades amb l'acta des de l'inici del set (tram parcial, l'acta en té {r['expected']})")
+        else:
+            progress(f"  Set {set_no}: {r['found']} jugades trobades, {r['expected']} segons l'acta" + (f" (en falten {r['missing']})" if r["missing"] else ""))
 
     return {
         "format": "volei-vidia/vision-detections",

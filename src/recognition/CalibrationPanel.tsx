@@ -31,6 +31,14 @@ type Frame = { kind: 'video'; url: string; name: string } | { kind: 'image'; url
 
 const isMissingTable = (msg?: string) => !!msg && /relation .* does not exist|could not find the table|schema cache/i.test(msg);
 
+// "1:23:45", "29:45" o "75" → segons
+function parseClock(s: string): number | null {
+  const v = s.trim();
+  if (!v) return null;
+  if (!/^\d+(:\d{1,2}){0,2}$/.test(v)) return null;
+  return v.split(':').reduce((acc, p) => acc * 60 + Number(p), 0);
+}
+
 export function CalibrationPanel({ m, canEdit }: Props) {
   const { t } = useTranslation();
   const match = m.match!;
@@ -63,6 +71,9 @@ export function CalibrationPanel({ m, canEdit }: Props) {
     nearSide: defaultNearSides('H', maxSets),
   }));
   const [dirty, setDirty] = useState(false);
+  // Només si es mouen els punts la calibració passa a valer des del fotograma actual
+  // (canviar els equips o l'inici dels sets no crea un tram nou)
+  const [pointsDirty, setPointsDirty] = useState(false);
   const [active, setActive] = useState<CalPointKey>('nl');
   const update = (patch: Partial<Calibration>) => {
     setCal((c) => ({ ...c, ...patch }));
@@ -153,6 +164,7 @@ export function CalibrationPanel({ m, canEdit }: Props) {
   }
 
   function setPoint(key: CalPointKey, p: ImgPt) {
+    setPointsDirty(true);
     setCal((c) => ({ ...c, points: { ...c.points, [key]: p } }));
     setDirty(true);
     setMsg(null);
@@ -239,8 +251,9 @@ export function CalibrationPanel({ m, canEdit }: Props) {
   const complete = (['nl', 'nr', 'fr', 'fl'] as CalPointKey[]).every((k) => cal.points[k]);
 
   async function save() {
-    const fromTime = frame?.kind === 'video' ? Math.round(time * 10) / 10 : cal.fromTime;
-    const data = { width: cal.width, height: cal.height, netHeight: cal.netHeight, points: cal.points, nearSide: cal.nearSide };
+    const isSaved = saved.some((c) => c.fromTime === cal.fromTime);
+    const fromTime = frame?.kind === 'video' && (pointsDirty || !isSaved) ? Math.round(time * 10) / 10 : cal.fromTime;
+    const data = { width: cal.width, height: cal.height, netHeight: cal.netHeight, points: cal.points, nearSide: cal.nearSide, setStarts: cal.setStarts ?? {} };
     const { error } = await supabase
       .from('video_calibrations')
       .upsert({ match_id: match.id, club_id: match.club_id, from_time: fromTime, data });
@@ -250,6 +263,7 @@ export function CalibrationPanel({ m, canEdit }: Props) {
     }
     setCal((c) => ({ ...c, fromTime }));
     setDirty(false);
+    setPointsDirty(false);
     setMsg({ ok: true, text: t('recognition.calib.saved', { time: formatTime(fromTime) }) });
     await load();
   }
@@ -404,6 +418,7 @@ export function CalibrationPanel({ m, canEdit }: Props) {
             <button
               className="btn btn-sm"
               onClick={() => {
+                setPointsDirty(true);
                 const points = { ...cal.points };
                 delete points[active];
                 update({ points });
@@ -467,28 +482,68 @@ export function CalibrationPanel({ m, canEdit }: Props) {
               ))}
             </div>
           </div>
-          <div className="cal-sets">
-            {Array.from({ length: maxSets }, (_, i) => i + 1).map((n) => (
-              <label key={n} className="small">
-                {t('recognition.set')} {n}:{' '}
-                <select
-                  value={cal.nearSide[n] ?? ''}
-                  onChange={(e) => update({ nearSide: { ...cal.nearSide, [n]: e.target.value as Side } })}
-                >
-                  <option value="H">{teamName('H')}</option>
-                  <option value="A">{teamName('A')}</option>
-                </select>
-              </label>
-            ))}
-          </div>
+          <table className="cal-sets-table">
+            <thead>
+              <tr>
+                <th>{t('recognition.set')}</th>
+                <th>{t('recognition.calib.nearTeam')}</th>
+                <th>{t('recognition.calib.setStart')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: maxSets }, (_, i) => i + 1).map((n) => (
+                <tr key={n}>
+                  <td className="center">{n}</td>
+                  <td>
+                    <select
+                      value={cal.nearSide[n] ?? ''}
+                      onChange={(e) => update({ nearSide: { ...cal.nearSide, [n]: e.target.value as Side } })}
+                      aria-label={`${t('recognition.set')} ${n}`}
+                    >
+                      <option value="H">{teamName('H')}</option>
+                      <option value="A">{teamName('A')}</option>
+                    </select>
+                  </td>
+                  <td className="row nowrap">
+                    <input
+                      className="mono cal-time"
+                      placeholder="mm:ss"
+                      inputMode="numeric"
+                      defaultValue={cal.setStarts?.[n] != null ? formatTime(cal.setStarts[n]) : ''}
+                      key={`${n}-${cal.setStarts?.[n] ?? ''}`}
+                      onBlur={(e) => {
+                        const v = parseClock(e.target.value);
+                        const setStarts = { ...(cal.setStarts ?? {}) };
+                        if (v == null) delete setStarts[n];
+                        else setStarts[n] = v;
+                        update({ setStarts });
+                      }}
+                      aria-label={t('recognition.calib.setStart')}
+                    />
+                    {frame?.kind === 'video' && (
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        title={t('recognition.calib.useFrameTime')}
+                        onClick={() => update({ setStarts: { ...(cal.setStarts ?? {}), [n]: Math.round(time) } })}
+                      >
+                        ⏱
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
           <p className="small muted">{t('recognition.calib.sidesHelp')}</p>
+          <p className="small muted">{t('recognition.calib.setStartHelp')}</p>
         </fieldset>
       </div>
 
       <div className="row wrap">
         {canEdit && (
           <button className="btn btn-primary" disabled={!complete || (!dirty && saved.length > 0)} onClick={() => void save()}>
-            {frame?.kind === 'video'
+            {frame?.kind === 'video' && (pointsDirty || !saved.some((c) => c.fromTime === cal.fromTime))
               ? t('recognition.calib.saveFrom', { time: formatTime(time) })
               : t('recognition.calib.saveFrom', { time: formatTime(cal.fromTime) })}
           </button>

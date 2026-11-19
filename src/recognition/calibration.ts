@@ -41,6 +41,8 @@ export interface Calibration {
   netHeight: number;
   // Equip al costat de la càmera a cada set (1..5)
   nearSide: Partial<Record<number, Side>>;
+  // Moment del vídeo (s) en què comença cada set (opcional): permet lligar les jugades amb l'acta
+  setStarts?: Partial<Record<number, number>>;
 }
 
 // Coordenades de càmera de cada punt de calibració (u, v, z)

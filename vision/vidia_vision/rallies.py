@@ -92,13 +92,22 @@ def assign_sets(segs: list[Segment], set_at) -> None:
         s.set = set_at(s.start)
 
 
-def match_acta(segs: list[Segment], acta: dict[int, list[ActaRally]]) -> dict:
+def match_acta(
+    segs: list[Segment],
+    acta: dict[int, list[ActaRally]],
+    bounds=None,
+    analysed: tuple[float, float] | None = None,
+) -> dict:
     """Ajusta les jugades de cada set al nombre de punts de l'acta i hi posa servidor i guanyador.
 
-    Si hi ha més segments que punts, es descarten els més febles (pocs contactes i
-    sense xiulet); si n'hi ha menys, s'informa dels que falten.
+    Només es pot fer si se sap on comença el set al vídeo i el tram analitzat
+    n'inclou l'inici (si no, no se sap quin punt de l'acta és la primera jugada
+    trobada). Si el tram també n'inclou el final, se sap quantes jugades hi ha
+    d'haver: si n'hi ha més, es descarten les més febles; si n'hi ha menys,
+    s'informa de les que falten.
     """
     report: dict[int, dict] = {}
+    a0, a1 = analysed if analysed else (float("-inf"), float("inf"))
     by_set: dict[int, list[Segment]] = {}
     for s in segs:
         if s.set is not None:
@@ -106,8 +115,19 @@ def match_acta(segs: list[Segment], acta: dict[int, list[ActaRally]]) -> dict:
     for set_no, rallies in acta.items():
         found = sorted(by_set.get(set_no, []), key=lambda s: s.start)
         expected = len(rallies)
+        st, en = bounds(set_no) if bounds else (None, None)
+        if not found and (st is None or st > a1 or (en is not None and en < a0)):
+            continue  # set fora del tram analitzat
+        if bounds is None:  # sense informació de temps: es suposa que el tram és el set sencer
+            covers_start = covers_end = True
+        else:
+            covers_start = st is not None and a0 <= st + 5
+            covers_end = covers_start and (a1 >= en - 5 if en is not None else a1 == float("inf"))
+        if not covers_start:
+            report[set_no] = {"expected": expected, "found": len(found), "kept": len(found), "missing": None, "partial": True}
+            continue
         kept = found
-        if len(found) > expected:
+        if covers_end and len(found) > expected:
             strongest = sorted(found, key=lambda s: -s.strength)[:expected]
             keep_ids = {id(s) for s in strongest}
             kept = [s for s in found if id(s) in keep_ids]
@@ -120,5 +140,11 @@ def match_acta(segs: list[Segment], acta: dict[int, list[ActaRally]]) -> dict:
             s.server_player = r.server_player
             s.winner = r.winner
             s.score_before = r.before
-        report[set_no] = {"expected": expected, "found": len(found), "kept": len(kept), "missing": max(0, expected - len(found))}
+        report[set_no] = {
+            "expected": expected,
+            "found": len(found),
+            "kept": len(kept),
+            "missing": max(0, expected - len(found)) if covers_end else None,
+            "partial": not covers_end,
+        }
     return report

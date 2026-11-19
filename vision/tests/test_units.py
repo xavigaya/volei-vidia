@@ -128,3 +128,45 @@ def test_segment_splits_at_whistle_and_caps_length():
     cs = [Contact(k * 1.5 + (5 if k > 30 else 0), 100, 100, 0.9, True, True) for k in range(60)]
     segs = segment(cs, whistles=[], gap=6)
     assert len(segs) >= 2 and all(s.end - s.start <= 40 for s in segs)
+
+
+def test_match_acta_needs_set_start_in_range():
+    from vidia_vision.contacts import Contact
+
+    acta = {1: [Rally(1, i, "H", 7, "H", (i, 0), (i + 1, 0)) for i in range(4)], 2: [Rally(2, 0, "A", 3, "A", (0, 0), (0, 1))]}
+
+    def segs_at(times):
+        out = segment([Contact(t + d, 1, 1, 0.9, True, True) for t in times for d in (0, 1)], whistles=[])
+        for s in out:
+            s.set = 1 if s.start < 100 else 2
+        return out
+
+    bounds = lambda n: {1: (10.0, 100.0), 2: (100.0, 300.0)}[n]
+    # Tram que comença a mig set: no es lliguen
+    segs = segs_at([40, 60])
+    rep = match_acta(segs, acta, bounds=bounds, analysed=(30, 90))
+    assert rep[1]["partial"] and rep[1]["missing"] is None and all(s.index is None for s in segs)
+    # Tram que inclou l'inici del set: la primera jugada és el primer punt
+    segs = segs_at([12, 40, 60])
+    rep = match_acta(segs, acta, bounds=bounds, analysed=(0, 70))
+    assert [s.index for s in segs] == [0, 1, 2] and rep[1]["partial"] and rep[1]["missing"] is None
+    # Set sencer
+    segs = segs_at([12, 40, 60])
+    rep = match_acta(segs, acta, bounds=bounds, analysed=(0, 99))
+    assert rep[1]["missing"] == 1 and 2 not in rep
+
+
+def test_cli_set_starts_and_lineup_times(tmp_path):
+    pkg = {
+        "format": "volei-vidia/analysis-package", "version": 1,
+        "calibrations": [calibration_json(P)],
+        "events": [{"seq": 1, "set": 1, "type": "lineup", "videoTime": 0}, {"seq": 2, "set": 2, "type": "lineup", "videoTime": 1800}],
+    }
+    f = tmp_path / "p.json"
+    f.write_text(json.dumps(pkg))
+    p = load_package(f)
+    assert p.set_starts == {1: 0.0, 2: 1800.0}
+    pkg["calibrations"][0]["setStarts"] = {"1": 75, "2": 1810}
+    f.write_text(json.dumps(pkg))
+    p = load_package(f)
+    assert p.set_starts == {1: 75.0, 2: 1810.0} and p.set_at(100) == 1 and p.set_at(2000) == 2 and p.set_at(10) is None

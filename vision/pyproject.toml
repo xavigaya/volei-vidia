@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vidia-vision"
-version = "0.2.0"
+version = "0.2.1"
 description = "Volei VidIA — eina local d'anàlisi de vídeo (detecció de jugadors, pilota, cops i jugades)"
 readme = "README.md"
 requires-python = ">=3.10"

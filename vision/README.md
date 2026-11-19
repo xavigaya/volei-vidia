@@ -47,6 +47,8 @@ La primera anàlisi amb jugadors baixa els pesos del detector (uns 170 MB).
 
 Es desa `balafia-farners.deteccions.json` al costat del vídeo.
 
+Perquè l'eina pugui lligar cada jugada amb l'acta (quin punt és, qui serveix i qui el guanya), ha de saber **on comença cada set al vídeo**. Indica-ho a l'app (*Calibració del vídeo → Inici al vídeo*, amb el botó ⏱ sobre el fotograma del primer servei de cada set) abans d'exportar el paquet, o amb `--set-starts`. Si el tram analitzat no inclou l'inici d'un set, les jugades d'aquell set no es lliguen amb l'acta.
+
 Opcions útils:
 
 | Opció | Què fa |
@@ -56,6 +58,7 @@ Opcions útils:
 | `--no-players` | Sense detecció de jugadors (no cal PyTorch; molt més ràpid) |
 | `--players-fps 5` | Deteccions de jugadors per segon (més = més precís i més lent) |
 | `--device cpu` | Força la CPU |
+| `--set-starts 1:20,29:45,58:10` | Moment del vídeo en què comença cada set (si no s'ha indicat a l'app, a *Calibració del vídeo*). Cal per lligar les jugades amb l'acta |
 | `--out fitxer.json` | Nom del fitxer de resultats |
 
 Al final de cada anàlisi es mostra el temps de càlcul respecte a la durada del tram. Amb la GPU, el detector de jugadors treballa en mitja precisió.

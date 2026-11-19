@@ -45,6 +45,7 @@ def main(argv: list[str] | None = None) -> int:
     p_an.add_argument("--no-players", action="store_true", help="sense detecció de jugadors (no cal PyTorch)")
     p_an.add_argument("--players-fps", type=float, default=5.0, help="deteccions de jugadors per segon (per defecte 5)")
     p_an.add_argument("--device", choices=["cuda", "cpu"], help="on s'executa el detector (per defecte, la GPU si n'hi ha)")
+    p_an.add_argument("--set-starts", help="moment del vídeo en què comença cada set, separats per comes (p. ex. 1:20,29:45,58:10)")
     args = ap.parse_args(argv)
 
     if args.cmd == "check":
@@ -71,6 +72,13 @@ def main(argv: list[str] | None = None) -> int:
         if not Path(args.video).exists():
             print(f"No es troba el vídeo: {args.video}", file=sys.stderr)
             return 2
+        if args.set_starts:
+            try:
+                times = [_parse_time(x.strip()) for x in args.set_starts.split(",") if x.strip()]
+            except ValueError:
+                print("--set-starts: format no vàlid (exemple: 1:20,29:45,58:10)", file=sys.stderr)
+                return 2
+            pkg.set_starts = {i + 1: float(t) for i, t in enumerate(times) if t is not None}
         out = args.out or str(Path(args.video).with_suffix("")) + ".deteccions.json"
         opts = Options(
             start=_parse_time(args.start) or 0.0,
