@@ -170,3 +170,18 @@ def test_cli_set_starts_and_lineup_times(tmp_path):
     f.write_text(json.dumps(pkg))
     p = load_package(f)
     assert p.set_starts == {1: 75.0, 2: 1810.0} and p.set_at(100) == 1 and p.set_at(2000) == 2 and p.set_at(10) is None
+
+
+def test_above_net_marks_rallies_without_ball_over_the_net():
+    from vidia_vision.ball import Candidate
+    from vidia_vision.pipeline import _above_net
+    from vidia_vision.rallies import Segment
+
+    cal = calibration(P)
+    over = cal.court_to_image(np.array([[4.5, 9.0]]), z=4.0)[0]  # pilota a 4 m sobre la xarxa
+    low = cal.court_to_image(np.array([[4.5, 1.0]]), z=0.5)[0]  # pilota botant prop del fons
+    path = [Candidate(10 + k / 30, *over, 8, 0.9) for k in range(5)] + [Candidate(30 + k / 30, *low, 8, 0.9) for k in range(5)]
+    segs = [Segment(9.8, 11.0, [0, 1]), Segment(29.8, 31.0, [2, 3])]
+    _above_net(segs, path, lambda t: cal)
+    assert segs[0].above_net == 5 and segs[0].plausible
+    assert segs[1].above_net == 0 and not segs[1].plausible

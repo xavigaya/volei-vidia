@@ -75,7 +75,7 @@ Altres ordres: `.\vidia-vision.cmd info partit.mp4` (resolució, fps, durada, à
 | Pilota | Diferència entre tres fotogrames consecutius, taques de la mida esperada segons la calibració, enllaçades en trajectòries. Es descarten les taques dins el cos dels jugadors (braços, cap) i es trien les trajectòries que s'assemblen a un vol lliure, sense solapar-se |
 | Jugadors | Faster R-CNN (torchvision, pesos de COCO) a 5 fps; es descarten les persones fora de la pista (banquetes, àrbitres) amb la calibració; seguiment amb assignació òptima |
 | Contactes | Trencament de la trajectòria (l'ajust parabòlic local falla i la direcció canvia), confirmat pel so d'un cop |
-| Jugades | Contactes seguits, tallats als xiulets i als silencis; cal almenys un contacte confirmat pel so. Si hi ha acta, s'ajusten al nombre de punts de cada set i reben el servidor i el guanyador |
+| Jugades | Contactes seguits, tallats als xiulets i als silencis; cal almenys un contacte confirmat pel so i que la pilota passi per sobre de la xarxa (el que passa entre punts, com botar la pilota o tornar-la al servidor, no hi passa). Si hi ha acta, s'ajusten al nombre de punts de cada set, començant per les que passen per sobre de la xarxa, i reben el servidor i el guanyador |
 
 Limitacions d'aquesta primera versió:
 

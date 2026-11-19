@@ -30,10 +30,21 @@ class Segment:
     server_player: int | None = None
     winner: str | None = None
     score_before: tuple[int, int] | None = None
+    # Posicions de la pilota per sobre de la cinta de la xarxa (i entre les antenes).
+    # Tota jugada en té (com a mínim, el servei creua la xarxa); entre punts, quan es bota
+    # la pilota o es torna a l'equip que serveix, gairebé mai. None = no calculat.
+    above_net: int | None = None
+
+    @property
+    def plausible(self) -> bool:
+        return self.above_net is None or self.above_net >= 1
 
     @property
     def strength(self) -> float:
-        return len(self.contacts) + (1.5 if self.whistle else 0)
+        s = len(self.contacts) + (1.5 if self.whistle else 0) + min(self.end - self.start, 10) / 5
+        if self.above_net is not None:
+            s += 3 * min(self.above_net, 5) / 5
+        return s
 
 
 def segment(
@@ -128,7 +139,8 @@ def match_acta(
             continue
         kept = found
         if covers_end and len(found) > expected:
-            strongest = sorted(found, key=lambda s: -s.strength)[:expected]
+            # Primer les jugades on la pilota passa per sobre de la xarxa, i dins de cada grup les més fortes
+            strongest = sorted(found, key=lambda s: (not s.plausible, -s.strength))[:expected]
             keep_ids = {id(s) for s in strongest}
             kept = [s for s in found if id(s) in keep_ids]
             for s in found:

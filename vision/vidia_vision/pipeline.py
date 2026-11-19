@@ -128,6 +128,13 @@ def analyze(pkg: AnalysisPackage, video: str, opts: Options, progress: Callable[
 
     attribute(contacts, players, path, near_for)
     segs = segment(contacts, aev.whistles)
+    _above_net(segs, path, cal_for)
+    implausible = [s for s in segs if not s.plausible]
+    if not pkg.rallies:
+        # Sense acta, es descarten directament les que no passen per sobre de la xarxa
+        segs = [s for s in segs if s.plausible]
+    if implausible:
+        progress(f"  {len(implausible)} candidates sense la pilota per sobre de la xarxa (moviment entre punts)" + ("" if pkg.rallies else ": descartades"))
     assign_sets(segs, pkg.set_at)
     # Final del vídeo: l'últim set acaba amb el vídeo
     def bounds(n: int):
@@ -175,6 +182,7 @@ def analyze(pkg: AnalysisPackage, video: str, opts: Options, progress: Callable[
                 "end": round(s.end, 3),
                 "contacts": s.contacts,
                 "whistle": s.whistle,
+                "aboveNet": s.above_net,
                 "server": s.server,
                 "serverPlayer": s.server_player,
                 "winner": s.winner,
@@ -185,6 +193,27 @@ def analyze(pkg: AnalysisPackage, video: str, opts: Options, progress: Callable[
         "acta": {str(k): v for k, v in report.items()},
         "elapsed": round(time.time() - t0, 1),
     }
+
+
+def _above_net(segs, path, cal_for, margin_px: float = 8.0) -> None:
+    """Compta, per a cada jugada, les posicions de la pilota per sobre de la cinta de la xarxa."""
+    if not path:
+        return
+    ts = np.array([c.t for c in path])
+    for s in segs:
+        cal = cal_for(s.start)
+        if cal is None or cal.camera is None:
+            continue
+        a, b = cal.court_to_image(np.array([[0.0, 9.0], [9.0, 9.0]]), z=cal.net_height)
+        i0, i1 = np.searchsorted(ts, s.start - 0.5), np.searchsorted(ts, s.end + 0.5)
+        n = 0
+        for c in path[i0:i1]:
+            if not (min(a[0], b[0]) <= c.x <= max(a[0], b[0])):
+                continue
+            y_net = a[1] + (b[1] - a[1]) * (c.x - a[0]) / ((b[0] - a[0]) or 1.0)
+            if c.y < y_net - margin_px:
+                n += 1
+        s.above_net = n
 
 
 def _draw_debug(writer, img: np.ndarray, cal: Calibration, cands, tracker: Tracker) -> None:
